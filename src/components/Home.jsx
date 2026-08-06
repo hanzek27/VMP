@@ -24,8 +24,7 @@ export default function Home({
             <p className="hero__eyebrow">Státní plavební správa</p>
             <h1>Přípravné testy VMP</h1>
             <p className="hero__lead">
-              Bejby udělal jsem nám malou apku na VMPčko. Otázky
-              odpovídají oficiálním souborům otázek.
+              Test appka.
             </p>
           </div>
           <button className="btn btn--ghost hero__settings" onClick={onSettings}>
