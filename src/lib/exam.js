@@ -69,24 +69,30 @@ export function missedQuestions(categoryId, missedIds = []) {
   return getQuestions(categoryId).filter((q) => wanted.has(q.n))
 }
 
+/** Questions of a category belonging to one thematic topic, in bank order. */
+export const topicQuestions = (categoryId, topic) =>
+  getQuestions(categoryId).filter((q) => q.topic === topic)
+
 /**
  * Build a runnable session.
  *
  * mode 'exam'     – drawn subset, scored, optional countdown.
  * mode 'learn'    – the whole question bank, never scored, never timed.
  * mode 'mistakes' – only questions previously answered wrong, same rules as 'learn'.
+ * mode 'topic'    – only questions of `opts.topic`, same rules as 'learn'.
  */
-export function createSession(categoryId, mode, settings, missedIds = []) {
+export function createSession(categoryId, mode, settings, opts = {}) {
   const cat = getCategory(categoryId)
+  const { missedIds = [], topic = null } = opts
 
   let source
   if (mode === 'exam') {
     source = drawQuestions(categoryId, cat.questionCount)
   } else {
-    const pool =
-      mode === 'mistakes'
-        ? missedQuestions(categoryId, missedIds)
-        : getQuestions(categoryId)
+    let pool
+    if (mode === 'mistakes') pool = missedQuestions(categoryId, missedIds)
+    else if (mode === 'topic') pool = topicQuestions(categoryId, topic)
+    else pool = getQuestions(categoryId)
     source = settings.shuffleQuestions ? shuffled(pool) : [...pool]
   }
 
@@ -106,6 +112,7 @@ export function createSession(categoryId, mode, settings, missedIds = []) {
   return {
     categoryId,
     mode,
+    topic,
     items,
     answers: new Array(items.length).fill(null),
     flags: new Array(items.length).fill(false),

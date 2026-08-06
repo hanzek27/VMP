@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import QuestionView from './QuestionView'
 import { getCategory } from '../categories'
 import { formatDuration, isScored, plural } from '../lib/exam'
+import { topicLabel } from '../topics'
 
 function useCountdown(deadline, onExpire) {
   const [left, setLeft] = useState(() => (deadline ? deadline - Date.now() : null))
@@ -30,7 +31,14 @@ function useCountdown(deadline, onExpire) {
 export default function Exam({ session, settings, onChange, onFinish, onQuit }) {
   const cat = getCategory(session.categoryId)
   const scored = isScored(session.mode)
-  const modeLabel = session.mode === 'mistakes' ? 'opakování chyb' : 'procvičování'
+  const modeLabel =
+    session.mode === 'mistakes'
+      ? 'opakování chyb'
+      : session.mode === 'topic'
+        ? topicLabel(session.categoryId, session.topic)
+        : 'procvičování'
+  // the topic name reads badly after a verb ("Dokončit Světla a znaky plavidel")
+  const finishNoun = session.mode === 'mistakes' ? 'opakování chyb' : 'procvičování'
   const total = session.items.length
 
   const [current, setCurrent] = useState(0)
@@ -136,6 +144,7 @@ export default function Exam({ session, settings, onChange, onFinish, onQuit }) 
       <main className="container container--narrow exambody" ref={scroller}>
         <QuestionView
           item={item}
+          categoryId={session.categoryId}
           chosen={chosen}
           onChoose={choose}
           reveal={reveal}
@@ -207,7 +216,7 @@ export default function Exam({ session, settings, onChange, onFinish, onQuit }) 
               })}
             </div>
             <button className="btn btn--primary btn--wide" onClick={() => setConfirm('finish')}>
-              {scored ? 'Vyhodnotit test' : `Dokončit ${modeLabel}`}
+              {scored ? 'Vyhodnotit test' : `Dokončit ${finishNoun}`}
             </button>
           </div>
         </div>
@@ -231,7 +240,7 @@ export default function Exam({ session, settings, onChange, onFinish, onQuit }) 
               </>
             ) : (
               <>
-                <h2>{scored ? 'Odevzdat test?' : `Dokončit ${modeLabel}?`}</h2>
+                <h2>{scored ? 'Odevzdat test?' : `Dokončit ${finishNoun}?`}</h2>
                 <p>
                   {answeredCount < total
                     ? `Bez odpovědi ${plural(total - answeredCount, 'zůstává', 'zůstávají', 'zůstává')} ` +

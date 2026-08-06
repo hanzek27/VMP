@@ -8,7 +8,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "scrape": "node tools/scrape.mjs"
+    "scrape": "node tools/scrape.mjs",
+    "classify": "node tools/classify.mjs"
   },
   "dependencies": {
     "react": "^18.3.1",

@@ -75,6 +75,27 @@ questions. Keep it that way — a silent drop would corrupt the bank invisibly.
 
 `t` and `img` are both optional on a cell, but never both absent.
 
+### Topics (`q.topic`)
+
+The source sets are only loosely thematic — `PP2 2015` alone mixes vessel
+lights, right of way, locks, mooring, reduced visibility and water-skiing. So
+`tools/classify.mjs` assigns every question a **thematic topic** (30 across the
+three categories, e.g. `svetla-plavidel`, `vyhybaci-pravidla`, `meteorologie`).
+
+- Ordered keyword rules, **first match wins**; unmatched questions fall back to
+  the dominant topic of their source set, so coverage is always 100%.
+- `topic` is **derived, not scraped** — `scrape.mjs` calls `classifyBank()`
+  before writing, so a refresh can't wipe it. Never hand-edit `topic` in
+  `bank.json`; change the rules and re-run `npm run classify`.
+- Rule order is load-bearing. Specific patterns must sit above general ones —
+  e.g. `komory-mosty` runs before the vessel-light rule so a green *lock*
+  signal light isn't filed as a vessel light.
+- Two traps already hit: a `je:$` pattern matches any verb ending in `-je:`
+  (`zachycuje:`), and `při plavbě …` swallows aerodynamics questions unless the
+  narrow aero rule runs first. Audit with a group×topic cross-tab after edits.
+
+`npm run classify -- --report` prints per-topic counts plus sample questions.
+
 ## Architecture
 
 ```
@@ -101,10 +122,17 @@ built by `createSession()` in `src/lib/exam.js`.
 | `exam` | proportional draw | yes | yes (unless disabled) | only if `instantFeedback` |
 | `learn` | whole bank | no | no | always |
 | `mistakes` | previously-missed only | no | no | always |
+| `topic` | one `q.topic` only | no | no | always |
 
-Branch on **`isScored(mode)`**, not on `mode === 'learn'`. The two practice
+Branch on **`isScored(mode)`**, not on `mode === 'learn'`. The three practice
 modes share one path; special-casing them per screen is what the `isScored`
-refactor removed.
+refactor removed. `createSession(categoryId, mode, settings, opts)` takes
+`opts.missedIds` / `opts.topic` — add new mode inputs there, not as positional
+arguments.
+
+Note `Exam.jsx` keeps two labels: `modeLabel` (may be a topic name, used in the
+header) and `finishNoun` (always a plain noun) — "Dokončit Světla a znaky
+plavidel" reads badly.
 
 ### Proportional sampling
 

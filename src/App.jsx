@@ -15,8 +15,13 @@ export default function App() {
   const [session, setSession] = useState(null)
 
   const start = useCallback(
-    (categoryId, mode) => {
-      setSession(createSession(categoryId, mode, settings, missed[categoryId]))
+    (categoryId, mode, topic = null) => {
+      setSession(
+        createSession(categoryId, mode, settings, {
+          missedIds: missed[categoryId],
+          topic,
+        })
+      )
       setView('exam')
     },
     [settings, missed]
@@ -66,7 +71,7 @@ export default function App() {
         session={session}
         missedCount={missed[session.categoryId]?.length ?? 0}
         onHome={home}
-        onRetry={() => start(session.categoryId, session.mode)}
+        onRetry={() => start(session.categoryId, session.mode, session.topic)}
         onPracticeMistakes={() => start(session.categoryId, 'mistakes')}
       />
     )
