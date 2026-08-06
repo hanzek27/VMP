@@ -1,8 +1,9 @@
 import bank from './data/bank.json'
+import { TOPICS } from './topics'
 
 /**
  * Exam parameters come from the Státní plavební správa exam rules; the question
- * banks are scraped from spspraha.cz (see tools-parse.mjs).
+ * banks are scraped from spspraha.cz (see tools/scrape.mjs).
  */
 export const CATEGORIES = [
   {
@@ -25,7 +26,7 @@ export const CATEGORIES = [
   },
   {
     id: 'C',
-    name: 'C – příbřežní plavba na moři',
+    name: 'C plavba na moři',
     subtitle: 'Námořní jachtařský průkaz – příbřežní plavba',
     questionCount: 28,
     passMark: 24,
@@ -62,3 +63,15 @@ export function groupSizes(categoryId) {
 }
 
 export const totalQuestions = (id) => bank[id].length
+
+/**
+ * Topics of a category with their question counts, ordered as declared in
+ * src/topics.js. Topics with no questions are dropped.
+ */
+export function topicsOf(categoryId) {
+  const counts = new Map()
+  for (const q of bank[categoryId]) counts.set(q.topic, (counts.get(q.topic) || 0) + 1)
+  return Object.keys(TOPICS[categoryId] ?? {})
+    .filter((id) => counts.get(id))
+    .map((id) => ({ id, label: TOPICS[categoryId][id], count: counts.get(id) }))
+}

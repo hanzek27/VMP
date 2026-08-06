@@ -27,12 +27,14 @@ libovolného podadresáře.
 
 ## Funkce
 
-**Tři režimy u každé kategorie**
+**Čtyři režimy u každé kategorie**
 
 - **Test** – náhodný výběr otázek v počtu podle zkoušky, bodování, odpočet času
   a výsledek prospěl/neprospěl.
 - **Procvičování** – projde *všechny* otázky daného souboru, nikdy se neboduje
   a neběží v něm čas. Správnost se ukazuje hned po odpovědi.
+- **Procvičit okruh** – projde jen otázky vybraného tématického okruhu
+  (např. „Světla a znaky plavidel“). Neboduje se a neběží v něm čas.
 - **Jen moje chyby** – projde jen otázky, na které jste někdy odpověděli špatně.
   Nabídne se, až nějaké chyby máte. Neboduje se a neběží v něm čas.
 
@@ -79,11 +81,30 @@ nepřevažoval náhodně jeden okruh. Viz `allocate()` v `src/lib/exam.js`.
 ```bash
 npm run scrape            # z lokální cache v .cache/, jinak stáhne
 npm run scrape -- --refresh   # vynutí nové stažení stránek
+npm run classify              # přepočítá tématické okruhy
+npm run classify -- --report  # + ukázky otázek v každém okruhu
 ```
 
 Skript `tools/scrape.mjs` znovu vytvoří `src/data/bank.json` a doplní chybějící
 obrázky do `public/img/`. Při změně struktury zdrojové stránky skončí chybou
-místo tichého vynechání otázek.
+místo tichého vynechání otázek. Na závěr sám spustí klasifikaci, takže okruhy
+zůstanou zachovány.
+
+## Tématické okruhy
+
+Oficiální soubory otázek (`PP2 2015`, `MP1`, …) jsou tématicky jen volné – samotné
+`PP2 2015` míchá světla plavidel, přednost v plavbě, plavební komory, stání,
+sníženou viditelnost i vodní lyžování. Skript `tools/classify.mjs` proto každé
+otázce přiřadí **okruh** (`q.topic`); celkem jich je 30:
+
+| Kategorie | Okruhy |
+| --- | --- |
+| M | Pojmy a definice · Světla a znaky plavidel · Zvukové signály · Signální znaky na vodní cestě · Plavební provoz a přednost · Plavební komory a mosty · Stání, kotvení a vyvazování · Snížená viditelnost · Vodní sporty · Technické požadavky a doklady · První pomoc |
+| S | Pojmy, části lodi a lanoví · Typy plachetnic a trupů · Konstrukce, plachty a výstroj · Stabilita a hydrodynamika trupu · Aerodynamika plachet a síly · Kormidlo a ovládání · Plachtění a manévry |
+| C | COLREG – obecná ustanovení · Vyhýbací pravidla · Světla a znaky lodí · Nouzové a zvukové signály · Snížená viditelnost · Námořní právo · Navigace a kompas · Námořní mapy · Značení IALA laterální · Značení IALA kardinální · Meteorologie · Bezpečnost a záchrana |
+
+Klasifikace je **odvozená** – nikdy neupravujte `topic` ručně v `bank.json`,
+změňte pravidla a spusťte `npm run classify`.
 
 ## Struktura
 
@@ -98,9 +119,11 @@ src/
     Exam.jsx             průběh testu, časomíra, přehled
     QuestionView.jsx     otázka a odpovědi (sdílí test i rozbor)
     Result.jsx           výsledek, rozbor, úspěšnost po okruzích
-  data/bank.json         792 otázek
+  topics.js              názvy okruhů (sdílí appka i classify.mjs)
+  data/bank.json         792 otázek včetně tématických okruhů
 public/img/              242 obrázků k otázkám
 tools/scrape.mjs         aktualizace databáze ze spspraha.cz
+tools/classify.mjs       pravidla pro tématické okruhy
 ```
 
 Neoficiální pomůcka pro přípravu – závazné je vždy zadání skutečné zkoušky.

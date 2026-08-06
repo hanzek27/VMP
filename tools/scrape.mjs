@@ -14,6 +14,7 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { existsSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { classifyBank } from './classify.mjs'
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
 const IMG_DIR = join(ROOT, 'public', 'img')
@@ -129,9 +130,12 @@ async function main() {
   }
   console.log(`  ${fetched} new, ${images.size - fetched} already present`)
 
+  // topics are derived, so re-apply them here — a scrape would otherwise wipe them
+  classifyBank(bank)
+
   await writeFile(BANK, JSON.stringify(bank))
   const totals = Object.entries(bank).map(([k, v]) => `${k}=${v.length}`).join(' ')
-  console.log(`\nWrote ${BANK} (${totals})`)
+  console.log(`\nWrote ${BANK} (${totals}), topics applied`)
 }
 
 main().catch((err) => {

@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import QuestionView from './QuestionView'
 import { getCategory, groupLabel } from '../categories'
 import { formatDuration, isScored, plural, scoreByGroup, scoreSession } from '../lib/exam'
+import { topicLabel } from '../topics'
 
 function Ring({ percent, passed }) {
   const r = 52
@@ -34,6 +35,7 @@ export default function Result({
   const cat = getCategory(session.categoryId)
   const scored = isScored(session.mode)
   const mistakes = session.mode === 'mistakes'
+  const isTopic = session.mode === 'topic'
   const [onlyWrong, setOnlyWrong] = useState(scored)
 
   const score = useMemo(() => scoreSession(session), [session])
@@ -50,7 +52,12 @@ export default function Result({
           {!scored ? (
             <>
               <p className="resulthead__eyebrow">
-                {cat.name} · {mistakes ? 'opakování chyb' : 'procvičování'}
+                {cat.name} ·{' '}
+                {mistakes
+                  ? 'opakování chyb'
+                  : isTopic
+                    ? topicLabel(session.categoryId, session.topic)
+                    : 'procvičování'}
               </p>
               <h1>{mistakes && missedCount === 0 ? 'Seznam chyb je prázdný' : 'Hotovo'}</h1>
               <p className="resulthead__lead">
@@ -65,8 +72,9 @@ export default function Result({
                   </>
                 ) : (
                   <>
-                    Prošli jste {score.answered} z {score.total} otázek za{' '}
-                    {formatDuration(score.elapsedMs)}. Procvičování se neboduje.
+                    Prošli jste {score.answered} z {score.total} otázek
+                    {isTopic && ' v tomto okruhu'} za {formatDuration(score.elapsedMs)}.
+                    Procvičování se neboduje.
                   </>
                 )}
               </p>
@@ -164,7 +172,14 @@ export default function Result({
                           : 'chybně'}
                     </span>
                   </div>
-                  <QuestionView item={item} chosen={chosen} onChoose={() => {}} reveal="correct" locked />
+                  <QuestionView
+                    item={item}
+                    categoryId={session.categoryId}
+                    chosen={chosen}
+                    onChoose={() => {}}
+                    reveal="correct"
+                    locked
+                  />
                 </li>
               ))}
             </ol>

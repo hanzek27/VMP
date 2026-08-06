@@ -1,5 +1,7 @@
-import { CATEGORIES, totalQuestions } from '../categories'
+import { useState } from 'react'
+import { CATEGORIES, getCategory, topicsOf, totalQuestions } from '../categories'
 import { formatDuration } from '../lib/exam'
+import { topicIcon } from '../topics'
 
 const dateFmt = new Intl.DateTimeFormat('cs-CZ', {
   day: 'numeric',
@@ -16,6 +18,8 @@ export default function Home({
   onStart,
   onSettings,
 }) {
+  const [picker, setPicker] = useState(null)
+
   return (
     <div className="page">
       <header className="hero">
@@ -90,6 +94,13 @@ export default function Home({
                 <button className="btn btn--soft" onClick={() => onStart(c.id, 'learn')}>
                   Procvičovat ({totalQuestions(c.id)})
                 </button>
+                <button
+                  className="btn btn--topic btn--span"
+                  onClick={() => setPicker(c.id)}
+                >
+                  <span aria-hidden="true">🎯</span> Procvičit okruh (
+                  {topicsOf(c.id).length})
+                </button>
                 {missedCount > 0 && (
                   <button
                     className="btn btn--mistakes btn--span"
@@ -144,6 +155,51 @@ export default function Home({
           </p>
         </footer>
       </main>
+
+      {picker && (
+        <div className="sheet" onClick={() => setPicker(null)}>
+          <div className="sheet__panel" onClick={(e) => e.stopPropagation()}>
+            <div className="sheet__head">
+              <div>
+                <h2>Procvičit okruh</h2>
+                <p className="sheet__sub">{getCategory(picker).name}</p>
+              </div>
+              <button
+                className="btn btn--ghost btn--icon"
+                onClick={() => setPicker(null)}
+                aria-label="Zavřít"
+              >
+                <span aria-hidden="true">✕</span>
+              </button>
+            </div>
+
+            <ul className="topics">
+              {topicsOf(picker).map((t) => (
+                <li key={t.id}>
+                  <button
+                    className="topic"
+                    onClick={() => {
+                      const cat = picker
+                      setPicker(null)
+                      onStart(cat, 'topic', t.id)
+                    }}
+                  >
+                    <span className="topic__icon" aria-hidden="true">
+                      {topicIcon(t.id)}
+                    </span>
+                    <span className="topic__label">{t.label}</span>
+                    <span className="topic__count">{t.count}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+
+            <p className="sheet__note">
+              Procvičování okruhu se neboduje a neběží v něm čas.
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

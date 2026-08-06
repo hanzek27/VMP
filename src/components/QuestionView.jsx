@@ -1,4 +1,4 @@
-import { groupLabel } from '../categories'
+import { topicIcon, topicLabel } from '../topics'
 
 const LETTERS = ['a', 'b', 'c', 'd', 'e']
 
@@ -24,6 +24,7 @@ function Figures({ names, alt }) {
  */
 export default function QuestionView({
   item,
+  categoryId,
   chosen,
   onChoose,
   reveal = 'none',
@@ -36,7 +37,10 @@ export default function QuestionView({
     <div className="question">
       <div className="question__meta">
         <span className="chip chip--num">otázka č. {q.n}</span>
-        <span className="chip">{groupLabel(q.g)}</span>
+        <span className="chip">
+          <span aria-hidden="true">{topicIcon(q.topic)}</span>{' '}
+          {topicLabel(categoryId, q.topic)}
+        </span>
       </div>
 
       <h2 className="question__text">{q.t}</h2>
