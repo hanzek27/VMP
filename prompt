@@ -1,0 +1,16 @@
+create app for sailing course tests
+
+application has three testing categories
+
+1. 'M a M20' = overall 35 questions each question is 1 point, to pass you have to have 30 points, time limit is 30 min, data here: http://www.spspraha.cz/zkousky/otazky.asp?zp=M%202015
+
+2. 'S a S20' = 14 questions, to pass you need 11 points, time limit is 10 min, data here: http://www.spspraha.cz/zkousky/otazky.asp?zp=S%202015
+
+3. 'C – příbřežní plavba na moři' = 28 questions, to pass you need 24 points, time limit 25 min, data here: http://www.spspraha.cz/zkousky/otazky.asp?zp=C
+
+app should have a settings where you can:
+1 turn off the time limit
+2 lable the correct answer
+2 to have an option to create test run with all the questions without point tracking just for learning
+
+also make it mobile responsive and use some nice design
