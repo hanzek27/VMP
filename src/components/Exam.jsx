@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import QuestionView from './QuestionView'
+import QuestionView, { imgUrl } from './QuestionView'
 import { getCategory } from '../categories'
 import { formatDuration, isScored, plural } from '../lib/exam'
 import { topicLabel } from '../topics'
@@ -102,6 +102,12 @@ export default function Exam({ session, settings, onChange, onFinish, onQuit }) 
     scroller.current?.scrollTo({ top: 0 })
   }, [current])
 
+  // the overview can be hundreds of rows long – open it on the current question
+  const currentRow = useRef(null)
+  useEffect(() => {
+    if (navOpen) currentRow.current?.scrollIntoView({ block: 'center' })
+  }, [navOpen])
+
   const lowTime = timeLeft !== null && timeLeft < 60_000
   const progress = useMemo(
     () => Math.round(((current + 1) / total) * 100),
@@ -182,18 +188,21 @@ export default function Exam({ session, settings, onChange, onFinish, onQuit }) 
 
       {navOpen && (
         <div className="sheet" onClick={() => setNavOpen(false)}>
-          <div className="sheet__panel" onClick={(e) => e.stopPropagation()}>
+          <div
+            className="sheet__panel sheet__panel--wide"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="sheet__head">
               <h2>Přehled otázek</h2>
               <button className="btn btn--ghost btn--icon" onClick={() => setNavOpen(false)}>
                 <span aria-hidden="true">✕</span>
               </button>
             </div>
-            <div className="grid">
+            <ul className="qlist">
               {session.items.map((it, i) => {
                 const a = session.answers[i]
                 const cls = [
-                  'grid__cell',
+                  'qlist__item',
                   i === current && 'is-current',
                   a !== null &&
                     (scored ? 'is-answered' : a === it.correctIdx ? 'is-ok' : 'is-bad'),
@@ -202,19 +211,33 @@ export default function Exam({ session, settings, onChange, onFinish, onQuit }) 
                   .filter(Boolean)
                   .join(' ')
                 return (
-                  <button
-                    key={i}
-                    className={cls}
-                    onClick={() => {
-                      setCurrent(i)
-                      setNavOpen(false)
-                    }}
-                  >
-                    {i + 1}
-                  </button>
+                  <li key={i}>
+                    <button
+                      ref={i === current ? currentRow : null}
+                      className={cls}
+                      aria-current={i === current ? 'true' : undefined}
+                      onClick={() => {
+                        setCurrent(i)
+                        setNavOpen(false)
+                      }}
+                    >
+                      <span className="qlist__num">{i + 1}</span>
+                      {/* many sign questions share identical wording – the
+                          thumbnail is what actually tells them apart */}
+                      {it.q.img?.length ? (
+                        <img className="qlist__thumb" src={imgUrl(it.q.img[0])} alt="" loading="lazy" />
+                      ) : null}
+                      <span className="qlist__text">{it.q.t}</span>
+                      {session.flags[i] && (
+                        <span className="qlist__flag" aria-label="označeno k revizi">
+                          ⚑
+                        </span>
+                      )}
+                    </button>
+                  </li>
                 )
               })}
-            </div>
+            </ul>
             <button className="btn btn--primary btn--wide" onClick={() => setConfirm('finish')}>
               {scored ? 'Vyhodnotit test' : `Dokončit ${finishNoun}`}
             </button>
