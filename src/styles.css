@@ -1003,7 +1003,8 @@ img {
 }
 
 .sheet__note {
-  margin: 14px 0 0;
+  /* sits inside .sheet__foot, which supplies the padding */
+  margin: 0;
   color: var(--muted);
   font-size: 0.82rem;
   text-align: center;
@@ -1073,6 +1074,56 @@ img {
   background: var(--sand);
   border-radius: 999px;
   padding: 2px 10px;
+}
+
+/* ------------------------------------------- full-height sheet (overview) */
+/* Header and footer stay put; only the list between them scrolls. */
+.sheet__panel--full {
+  height: 100dvh;
+  max-height: 100dvh;
+  border-radius: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+@media (min-width: 640px) {
+  .sheet__panel--full {
+    /* .sheet is a padded flex row here, so stretch fills it minus that padding */
+    align-self: stretch;
+    height: auto;
+    max-height: none;
+    border-radius: var(--radius-lg);
+  }
+}
+
+.sheet__panel--full .sheet__head {
+  flex: none;
+  align-items: flex-start;
+  margin: 0;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--line);
+}
+
+/* the one scrolling region between the pinned header and footer */
+.sheet__panel--full .sheet__scroll {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: 0;
+  padding: 12px 16px;
+  overscroll-behavior: contain;
+}
+
+.sheet__foot {
+  flex: none;
+  padding: 12px 16px calc(12px + var(--safe-b));
+  border-top: 1px solid var(--line);
+  background: var(--paper);
 }
 
 /* ------------------------------------------------- question overview list */

@@ -27,9 +27,7 @@ export default function Home({
           <div className="hero__text">
             <p className="hero__eyebrow">Státní plavební správa</p>
             <h1>Přípravné testy VMP</h1>
-            <p className="hero__lead">
-              Test appka.
-            </p>
+            <p className="hero__lead">Hromada kravin a nesrovnalostí prostě to nabifluj</p>
           </div>
           <button className="btn btn--ghost hero__settings" onClick={onSettings}>
             <span aria-hidden="true">⚙</span> Nastavení
@@ -158,7 +156,10 @@ export default function Home({
 
       {picker && (
         <div className="sheet" onClick={() => setPicker(null)}>
-          <div className="sheet__panel" onClick={(e) => e.stopPropagation()}>
+          <div
+            className="sheet__panel sheet__panel--full"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="sheet__head">
               <div>
                 <h2>Procvičit okruh</h2>
@@ -173,7 +174,7 @@ export default function Home({
               </button>
             </div>
 
-            <ul className="topics">
+            <ul className="topics sheet__scroll">
               {topicsOf(picker).map((t) => (
                 <li key={t.id}>
                   <button
@@ -194,9 +195,11 @@ export default function Home({
               ))}
             </ul>
 
-            <p className="sheet__note">
-              Procvičování okruhu se neboduje a neběží v něm čas.
-            </p>
+            <div className="sheet__foot">
+              <p className="sheet__note">
+                Procvičování okruhu se neboduje a neběží v něm čas.
+              </p>
+            </div>
           </div>
         </div>
       )}

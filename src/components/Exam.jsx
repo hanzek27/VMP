@@ -189,16 +189,27 @@ export default function Exam({ session, settings, onChange, onFinish, onQuit }) 
       {navOpen && (
         <div className="sheet" onClick={() => setNavOpen(false)}>
           <div
-            className="sheet__panel sheet__panel--wide"
+            className="sheet__panel sheet__panel--wide sheet__panel--full"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="sheet__head">
-              <h2>Přehled otázek</h2>
-              <button className="btn btn--ghost btn--icon" onClick={() => setNavOpen(false)}>
+              <div>
+                <h2>Přehled otázek</h2>
+                <p className="sheet__sub">
+                  {scored
+                    ? `zodpovězeno ${answeredCount} z ${total}`
+                    : `${total} ${plural(total, 'otázka', 'otázky', 'otázek')}`}
+                </p>
+              </div>
+              <button
+                className="btn btn--ghost btn--icon"
+                onClick={() => setNavOpen(false)}
+                aria-label="Zavřít"
+              >
                 <span aria-hidden="true">✕</span>
               </button>
             </div>
-            <ul className="qlist">
+            <ul className="qlist sheet__scroll">
               {session.items.map((it, i) => {
                 const a = session.answers[i]
                 const cls = [
@@ -238,9 +249,11 @@ export default function Exam({ session, settings, onChange, onFinish, onQuit }) 
                 )
               })}
             </ul>
-            <button className="btn btn--primary btn--wide" onClick={() => setConfirm('finish')}>
-              {scored ? 'Vyhodnotit test' : `Dokončit ${finishNoun}`}
-            </button>
+            <div className="sheet__foot">
+              <button className="btn btn--primary btn--wide" onClick={() => setConfirm('finish')}>
+                {scored ? 'Vyhodnotit test' : `Dokončit ${finishNoun}`}
+              </button>
+            </div>
           </div>
         </div>
       )}
