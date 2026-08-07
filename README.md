@@ -45,16 +45,20 @@ test.
 
 ## Funkce
 
-**Čtyři režimy u každé kategorie**
+**Režimy u každé kategorie**
 
 - **Test** – náhodný výběr otázek v počtu podle zkoušky, bodování, odpočet času
   a výsledek prospěl/neprospěl.
-- **Procvičování** – projde *všechny* otázky daného souboru, nikdy se neboduje
-  a neběží v něm čas. Správnost se ukazuje hned po odpovědi.
-- **Procvičit okruh** – projde jen otázky vybraného tématického okruhu
-  (např. „Světla a znaky plavidel“). Neboduje se a neběží v něm čas.
+- **Procvičit** – otevře seznam, ve kterém si vyberete buď *všechny otázky*
+  dané kategorie, nebo jeden tématický okruh (např. „Světla a znaky
+  plavidel“). Ani jedno se neboduje a neběží v tom čas; správnost se ukazuje
+  hned po odpovědi.
 - **Jen moje chyby** – projde jen otázky, na které jste někdy odpověděli špatně.
   Nabídne se, až nějaké chyby máte. Neboduje se a neběží v něm čas.
+- **Obrázkový supervysvětlovač** – není test: vypíše *všechny* obrázky
+  z otázek dané kategorie a ke každému rovnou správnou odpověď, seskupené po
+  okruzích. Na projíždění světel, znaků a bójí. Nabízí se u M (162 obrázků)
+  a C (78); kategorie S žádné obrázky nemá.
 
 ### Seznam chyb
 
@@ -137,6 +141,7 @@ src/
     Exam.jsx             průběh testu, časomíra, přehled
     QuestionView.jsx     otázka a odpovědi (sdílí test i rozbor)
     Result.jsx           výsledek, rozbor, úspěšnost po okruzích
+    Explainer.jsx        obrázkový supervysvětlovač
     OfflineSection.jsx   stav offline cache + instalace (v Nastavení)
     UpdateToast.jsx      nabídka nové verze
   lib/pwa.js             registrace service workeru, instalace, offline cache

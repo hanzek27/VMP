@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react'
 import Home from './components/Home'
 import Settings from './components/Settings'
 import Exam from './components/Exam'
+import Explainer from './components/Explainer'
 import Result from './components/Result'
 import UpdateToast from './components/UpdateToast'
 import { createSession, isScored, scoreSession, sessionOutcome } from './lib/exam'
@@ -14,6 +15,13 @@ export default function App() {
   const [missed, recordMissed, clearMissed] = useMissed()
   const [view, setView] = useState('home')
   const [session, setSession] = useState(null)
+  // the picture explainer is not a session – it has no answers to keep
+  const [explaining, setExplaining] = useState(null)
+
+  const explain = useCallback((categoryId) => {
+    setExplaining(categoryId)
+    setView('explain')
+  }, [])
 
   const start = useCallback(
     (categoryId, mode, topic = null) => {
@@ -52,6 +60,7 @@ export default function App() {
 
   const home = useCallback(() => {
     setSession(null)
+    setExplaining(null)
     setView('home')
   }, [])
 
@@ -77,6 +86,8 @@ export default function App() {
         onPracticeMistakes={() => start(session.categoryId, 'mistakes')}
       />
     )
+  else if (view === 'explain' && explaining)
+    screen = <Explainer categoryId={explaining} onBack={home} />
   else if (view === 'settings')
     screen = (
       <Settings
@@ -96,6 +107,7 @@ export default function App() {
         missed={missed}
         onClearHistory={clearHistory}
         onStart={start}
+        onExplain={explain}
         onSettings={() => setView('settings')}
       />
     )

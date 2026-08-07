@@ -113,13 +113,16 @@ src/
     Exam.jsx           question runner: timer, nav, overview sheet, dialogs
     QuestionView.jsx   one question + options — shared by Exam and Result
     Result.jsx         score/pass-fail, per-set breakdown, answer review
+    Explainer.jsx      picture + correct answer, browse-only (no session)
     OfflineSection.jsx offline/install block inside Settings
     UpdateToast.jsx    "new version" bar, rendered over every screen
 ```
 
-`App.jsx` is the whole router: a `view` string (`home|settings|exam|result`)
-plus one `session` object. No react-router, no state library. Session shape is
-built by `createSession()` in `src/lib/exam.js`.
+`App.jsx` is the whole router: a `view` string
+(`home|settings|exam|result|explain`) plus one `session` object. No
+react-router, no state library. Session shape is built by `createSession()` in
+`src/lib/exam.js`. `explain` is the odd one out — it holds a category id, not a
+session, because the explainer never records an answer.
 
 ### Three modes
 
@@ -139,6 +142,22 @@ arguments.
 Note `Exam.jsx` keeps two labels: `modeLabel` (may be a topic name, used in the
 header) and `finishNoun` (always a plain noun) — "Dokončit Světla a znaky
 plavidel" reads badly.
+
+`learn` has no button of its own any more: the category card offers *Procvičit*,
+which opens the topic picker with "Všechny otázky" as its first row.
+
+### Obrázkový supervysvětlovač (`Explainer.jsx`)
+
+Not a mode — no session, no answers, no scoring. It lists every picture in a
+category next to its correct answer, grouped by topic, for scrolling through
+lights and buoys. `imageCards()` / `imageCount()` in `categories.js` build it.
+
+The one subtlety is *which* cell holds the picture. Usually it is `q.img`
+(M: 162, C: 62), but 16 C questions put images on the answers and ask which one
+is right — there the **correct answer's** image is what the user needs to see,
+and 7 of those answers have no text at all, so the question itself becomes the
+caption (its trailing colon gets stripped). S has no pictures at all and the
+card hides the button.
 
 ### Proportional sampling
 
@@ -247,6 +266,10 @@ What has been verified: allocation sums, 500-draw sampling (no dupes, correct
 answer tracks through shuffling, full bank coverage), full exam→result→review
 flow, learn mode, mistakes-mode lifecycle, timer expiry auto-submit, settings
 persistence, and no-horizontal-overflow at 390 px.
+
+The explainer: both category lists complete (M 162, C 78 incl. the 16
+answer-image ones), grouped, every image loads, back returns home, no overflow
+at 390 px.
 
 PWA, verified the same way against `vite preview`: worker registers and claims
 the page, manifest parses, app and bank boot with the network cut, "download
