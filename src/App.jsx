@@ -3,11 +3,13 @@ import Home from './components/Home'
 import Settings from './components/Settings'
 import Exam from './components/Exam'
 import Explainer from './components/Explainer'
+import Cheatsheet from './components/Cheatsheet'
 import Result from './components/Result'
 import UpdateToast from './components/UpdateToast'
 import { createSession, isScored, scoreSession, sessionOutcome } from './lib/exam'
 import { useHistory, useMissed, useSettings } from './lib/storage'
 import { getCategory } from './categories'
+import { getCheatsheet } from './data/cheatsheets'
 
 export default function App() {
   const [settings, updateSettings, resetSettings] = useSettings()
@@ -17,10 +19,17 @@ export default function App() {
   const [session, setSession] = useState(null)
   // the picture explainer is not a session – it has no answers to keep
   const [explaining, setExplaining] = useState(null)
+  // nor is a tahák – it holds a sheet id
+  const [crib, setCrib] = useState(null)
 
   const explain = useCallback((categoryId) => {
     setExplaining(categoryId)
     setView('explain')
+  }, [])
+
+  const openCrib = useCallback((sheetId) => {
+    setCrib(sheetId)
+    setView('crib')
   }, [])
 
   const start = useCallback(
@@ -61,6 +70,7 @@ export default function App() {
   const home = useCallback(() => {
     setSession(null)
     setExplaining(null)
+    setCrib(null)
     setView('home')
   }, [])
 
@@ -88,6 +98,18 @@ export default function App() {
     )
   else if (view === 'explain' && explaining)
     screen = <Explainer categoryId={explaining} onBack={home} />
+  else if (view === 'crib' && crib)
+    screen = (
+      <Cheatsheet
+        sheetId={crib}
+        onBack={home}
+        onPractice={() => {
+          const s = getCheatsheet(crib)
+          setCrib(null)
+          start(s.categoryId, 'topic', s.topic)
+        }}
+      />
+    )
   else if (view === 'settings')
     screen = (
       <Settings
@@ -108,6 +130,7 @@ export default function App() {
         onClearHistory={clearHistory}
         onStart={start}
         onExplain={explain}
+        onCrib={openCrib}
         onSettings={() => setView('settings')}
       />
     )

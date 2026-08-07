@@ -10,6 +10,7 @@ import { formatDuration } from '../lib/exam'
 import { useBackGuard } from '../lib/backGuard'
 import { useInstall } from '../lib/pwa'
 import { topicIcon } from '../topics'
+import { CHEATSHEETS } from '../data/cheatsheets'
 
 const dateFmt = new Intl.DateTimeFormat('cs-CZ', {
   day: 'numeric',
@@ -25,6 +26,7 @@ export default function Home({
   onClearHistory,
   onStart,
   onExplain,
+  onCrib,
   onSettings,
 }) {
   const [picker, setPicker] = useState(null)
@@ -136,6 +138,33 @@ export default function Home({
             </article>
             )
           })}
+        </section>
+
+        <section className="cribs">
+          <div className="cribs__head">
+            <h2>Taháky</h2>
+            <p className="cribs__sub">
+              Vysvětlení místo biflování – proč signály vypadají tak, jak vypadají.
+            </p>
+          </div>
+          <ul className="cribs__list">
+            {CHEATSHEETS.map((s) => (
+              <li key={s.id}>
+                <button className="crib" onClick={() => onCrib(s.id)}>
+                  <span className="crib__badge" aria-hidden="true">
+                    {s.icon}
+                  </span>
+                  <span className="crib__text">
+                    <span className="crib__name">{s.title}</span>
+                    <span className="crib__meta">{s.subtitle}</span>
+                  </span>
+                  <span className="crib__go" aria-hidden="true">
+                    →
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
         </section>
 
         {history.length > 0 && (
