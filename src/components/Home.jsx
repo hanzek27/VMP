@@ -1,5 +1,11 @@
 import { useState } from 'react'
-import { CATEGORIES, getCategory, topicsOf, totalQuestions } from '../categories'
+import {
+  CATEGORIES,
+  getCategory,
+  imageCount,
+  topicsOf,
+  totalQuestions,
+} from '../categories'
 import { formatDuration } from '../lib/exam'
 import { useBackGuard } from '../lib/backGuard'
 import { useInstall } from '../lib/pwa'
@@ -18,6 +24,7 @@ export default function Home({
   missed,
   onClearHistory,
   onStart,
+  onExplain,
   onSettings,
 }) {
   const [picker, setPicker] = useState(null)
@@ -63,6 +70,8 @@ export default function Home({
         <section className="cards">
           {CATEGORIES.map((c) => {
             const missedCount = missed[c.id]?.length ?? 0
+            // S has no pictures at all – no point offering the explainer there
+            const pictures = imageCount(c.id)
             return (
             <article key={c.id} className={`card card--${c.accent}`}>
               <div className="card__head">
@@ -98,16 +107,18 @@ export default function Home({
                 <button className="btn btn--primary" onClick={() => onStart(c.id, 'exam')}>
                   Spustit test
                 </button>
-                <button className="btn btn--soft" onClick={() => onStart(c.id, 'learn')}>
-                  Procvičovat ({totalQuestions(c.id)})
+                <button className="btn btn--topic" onClick={() => setPicker(c.id)}>
+                  <span aria-hidden="true">🎯</span> Procvičit
                 </button>
-                <button
-                  className="btn btn--topic btn--span"
-                  onClick={() => setPicker(c.id)}
-                >
-                  <span aria-hidden="true">🎯</span> Procvičit okruh (
-                  {topicsOf(c.id).length})
-                </button>
+                {pictures > 0 && (
+                  <button
+                    className="btn btn--explain btn--span"
+                    onClick={() => onExplain(c.id)}
+                  >
+                    <span aria-hidden="true">🖼</span> Obrázkový supervysvětlovač (
+                    {pictures})
+                  </button>
+                )}
                 {missedCount > 0 && (
                   <button
                     className="btn btn--mistakes btn--span"
@@ -120,7 +131,7 @@ export default function Home({
               <p className="card__hint">
                 {missedCount > 0
                   ? 'Chybně zodpovězené otázky se ze seznamu ztratí, jakmile na ně odpovíte správně.'
-                  : 'Procvičování projde všechny otázky bez bodování a bez času.'}
+                  : 'Procvičovat lze jeden okruh nebo všechny otázky – bez bodování a bez času.'}
               </p>
             </article>
             )
@@ -171,7 +182,7 @@ export default function Home({
           >
             <div className="sheet__head">
               <div>
-                <h2>Procvičit okruh</h2>
+                <h2>Procvičit</h2>
                 <p className="sheet__sub">{getCategory(picker).name}</p>
               </div>
               <button
@@ -184,6 +195,24 @@ export default function Home({
             </div>
 
             <ul className="topics sheet__scroll">
+              {/* the whole bank, in the same list – the card no longer has a
+                  separate button for it */}
+              <li>
+                <button
+                  className="topic topic--all"
+                  onClick={() => {
+                    const cat = picker
+                    setPicker(null)
+                    onStart(cat, 'learn')
+                  }}
+                >
+                  <span className="topic__icon" aria-hidden="true">
+                    📚
+                  </span>
+                  <span className="topic__label">Všechny otázky</span>
+                  <span className="topic__count">{totalQuestions(picker)}</span>
+                </button>
+              </li>
               {topicsOf(picker).map((t) => (
                 <li key={t.id}>
                   <button
@@ -206,7 +235,7 @@ export default function Home({
 
             <div className="sheet__foot">
               <p className="sheet__note">
-                Procvičování okruhu se neboduje a neběží v něm čas.
+                Procvičování se neboduje a neběží v něm čas.
               </p>
             </div>
           </div>

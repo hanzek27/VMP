@@ -65,6 +65,47 @@ export function groupSizes(categoryId) {
 export const totalQuestions = (id) => bank[id].length
 
 /**
+ * The picture of a question, whichever cell carries it: usually the question
+ * itself, but some C questions (IALA buoyage) put it on the answers and ask
+ * which one is right – there the correct answer's image is the thing to look
+ * at. Returns null when the question has no picture at all.
+ */
+const pictureOf = (q) => {
+  const answer = q.a[q.correct]
+  const img = q.img?.length ? q.img : answer?.img
+  return img?.length ? { img, answer } : null
+}
+
+/**
+ * Every picture in a category paired with what it means – the question as the
+ * lead-in and its correct answer as the explanation. Answer-image questions
+ * have no answer text of their own sometimes, and then the question text is
+ * the whole explanation.
+ */
+export function imageCards(categoryId) {
+  const cards = []
+  for (const q of bank[categoryId]) {
+    const picture = pictureOf(q)
+    if (!picture) continue
+    cards.push({
+      n: q.n,
+      topic: q.topic,
+      img: picture.img,
+      lead: q.t,
+      answer: picture.answer?.t ?? null,
+    })
+  }
+  return cards
+}
+
+/** Cheap enough to call while rendering the category cards. */
+export function imageCount(categoryId) {
+  let n = 0
+  for (const q of bank[categoryId]) if (pictureOf(q)) n++
+  return n
+}
+
+/**
  * Topics of a category with their question counts, ordered as declared in
  * src/topics.js. Topics with no questions are dropped.
  */
