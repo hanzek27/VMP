@@ -1,0 +1,27 @@
+{
+  "id": "./",
+  "name": "VMP Testy – příprava na zkoušky",
+  "short_name": "VMP Testy",
+  "description": "Přípravné testy na zkoušky vůdce malého plavidla – kategorie M/M20, S/S20 a C (příbřežní plavba na moři).",
+  "lang": "cs",
+  "dir": "ltr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "any",
+  "background_color": "#eef3f7",
+  "theme_color": "#0b2540",
+  "categories": ["education"],
+  "icons": [
+    { "src": "./icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "./icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    {
+      "src": "./icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    { "src": "./favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

@@ -18,7 +18,9 @@ npm run scrape    # rebuild src/data/bank.json + public/img from spspraha.cz
 ```
 
 `vite.config.js` sets `base: './'` so `dist/` can be dropped into any
-subdirectory. Keep it that way.
+subdirectory. Keep it that way. The build must be served over HTTPS or
+localhost, though — `file://` has no service worker, so opening `dist/index.html`
+straight from disk gives up offline caching and install.
 
 ## The three exam categories
 
@@ -103,12 +105,16 @@ src/
   categories.js        exam params, group-code → human label
   lib/exam.js          sampling, shuffling, scoring, mode predicates
   lib/storage.js       localStorage hooks: settings, history, missed
+  lib/pwa.js           SW registration, install prompt, update, image cache
+  lib/backGuard.js     system back button → close sheet / confirm quit
   components/
     Home.jsx           category cards, mode launch, attempt history
     Settings.jsx       toggles + missed-list management
     Exam.jsx           question runner: timer, nav, overview sheet, dialogs
     QuestionView.jsx   one question + options — shared by Exam and Result
     Result.jsx         score/pass-fail, per-set breakdown, answer review
+    OfflineSection.jsx offline/install block inside Settings
+    UpdateToast.jsx    "new version" bar, rendered over every screen
 ```
 
 `App.jsx` is the whole router: a `view` string (`home|settings|exam|result`)
@@ -154,6 +160,61 @@ finish, so changing an answer mid-exam behaves correctly.
 localStorage keys: `vmp.settings.v1`, `vmp.history.v1` (last 20), `vmp.missed.v1`.
 All reads are try/caught — private mode must not crash the app.
 
+## PWA — installable, offline, back-button aware
+
+The app installs to a phone home screen and runs with no network at all. Four
+pieces, all of which only exist in a **production build** (`npm run dev` has no
+service worker on purpose — a stale cache while editing is worse than being
+online-only):
+
+- `public/manifest.webmanifest` + `icon-*.png` (rendered from `favicon.svg`;
+  regenerate with headless Chrome, there is no image tooling in the repo).
+  Paths inside it are relative, like `base: './'` — don't absolutise them.
+- `tools/sw.js` — the service worker, a **template**. `tools/vite-plugin-pwa.mjs`
+  reads `dist/` after the build and substitutes `__VERSION__`, `__SHELL__`,
+  `__MEDIA__`. It walks the output directory rather than the rollup bundle,
+  because `public/img` never enters the bundle.
+- `src/lib/pwa.js` — registration plus the `useInstall` / `useUpdate` /
+  `useOfflineMedia` hooks. State lives in module-level stores, not React:
+  `beforeinstallprompt` fires before anything mounts and Chrome only offers it
+  once.
+- `src/lib/backGuard.js` — see below.
+
+Non-obvious bits:
+
+1. **Two caches.** `vmp-shell-<hash>` (HTML/JS/CSS/icons, ~460 kB incl. the
+   whole question bank) is precached on install and replaced wholesale on
+   update. `vmp-media-v1` holds the 242 images, is filled lazily or on demand
+   from Settings, and **survives updates** — re-downloading 5 MB per release is
+   not acceptable on mobile data.
+2. **The worker never calls `skipWaiting()` by itself.** A new build takes over
+   only when the user accepts the `UpdateToast`, because activating it reloads
+   the page and would destroy a running exam. `controllerchange` therefore
+   reloads only when *we* asked for it — the first install fires it too.
+3. **The shell version is a hash of output filenames + sizes.** Asset names
+   already carry a content hash; the sizes are there for `public/` files, whose
+   names never change. A same-size edit to an image is the one thing it misses.
+4. **Register against `document.baseURI`, not `import.meta.url`.** The bundle
+   lives in `assets/`, which would scope the worker to `/assets/`.
+5. `--safe-t` (`env(safe-area-inset-top)`) pads `.hero`, `.topbar` and
+   `.examhead`: installed on iOS the status bar sits over the page.
+6. `overscroll-behavior` is `contain` on the body and both scroll regions —
+   installed, a pull-to-refresh would silently throw away an exam.
+
+### System back button
+
+With no browser chrome, back is the only "back" the user has, and one history
+entry means it closes the app mid-exam. `useBackGuard(active, onBack)` claims a
+history entry per closable thing — screens (`Settings`, `Result`), sheets, the
+exam itself (which answers with the same quit confirmation as ✕).
+
+The entries are anonymous: what the module reconciles is their **count**, in a
+microtask after the commit. That is what makes a swap safe — unmounting the
+exam's three guards while `Result` mounts one nets to two `history.back()`
+calls, and React's cleanup order (which is definition order, *not* LIFO) stops
+mattering. If a handler doesn't actually close anything, the entry is simply
+re-pushed on the next commit.
+
 ## Conventions
 
 - **Czech noun agreement matters.** Use `plural(n, one, few, many)` from
@@ -186,6 +247,16 @@ What has been verified: allocation sums, 500-draw sampling (no dupes, correct
 answer tracks through shuffling, full bank coverage), full exam→result→review
 flow, learn mode, mistakes-mode lifecycle, timer expiry auto-submit, settings
 persistence, and no-horizontal-overflow at 390 px.
+
+PWA, verified the same way against `vite preview`: worker registers and claims
+the page, manifest parses, app and bank boot with the network cut, "download
+all images" completes and images then load offline, back closes sheet →
+confirms quit → dismisses dialog → returns home with the history balanced
+(`playwright`'s `context.setOffline()` and `page.goBack()` do both jobs), no
+update prompt on a fresh install, and a rebuild raises the prompt, reloads onto
+the new assets and leaves exactly one shell cache. Note that a source edit the
+minifier drops produces byte-identical output and therefore *no* update — use a
+change that survives into `dist/` when testing this.
 
 ## Working agreements
 

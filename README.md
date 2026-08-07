@@ -23,7 +23,25 @@ npm run preview  # náhled produkčního buildu
 ```
 
 Build je plně statický a `base` je relativní, takže `dist/` lze nasadit do
-libovolného podadresáře.
+libovolného podadresáře. Musí být servírovaný přes **HTTPS** (nebo
+`localhost`), jinak se neaktivuje service worker a s ním offline režim
+a instalace.
+
+## Instalace do telefonu
+
+Aplikace je **PWA** – dá se nainstalovat na plochu a pak běží ve vlastním okně
+bez adresního řádku, i úplně bez signálu.
+
+- **Android / Chrome:** tlačítko „Instalovat aplikaci“ na úvodní obrazovce
+  (nebo menu prohlížeče → *Přidat na plochu*).
+- **iPhone / Safari:** *Sdílet* → *Přidat na plochu*.
+
+Offline funguje aplikace i otázky vždy; obrázky (≈ 5 MB) se ukládají postupně,
+jak na ně narazíte, nebo je lze stáhnout naráz v **Nastavení → Offline
+a instalace**. Systémové tlačítko *zpět* zavírá otevřené panely a z běžícího
+testu se ptá na potvrzení – aplikace se jím omylem neukončí. Novou verzi
+aplikace nabídne lišta dole; nasadí se až po potvrzení, aby nespadl rozdělaný
+test.
 
 ## Funkce
 
@@ -119,11 +137,18 @@ src/
     Exam.jsx             průběh testu, časomíra, přehled
     QuestionView.jsx     otázka a odpovědi (sdílí test i rozbor)
     Result.jsx           výsledek, rozbor, úspěšnost po okruzích
+    OfflineSection.jsx   stav offline cache + instalace (v Nastavení)
+    UpdateToast.jsx      nabídka nové verze
+  lib/pwa.js             registrace service workeru, instalace, offline cache
+  lib/backGuard.js       systémové tlačítko zpět
   topics.js              názvy okruhů (sdílí appka i classify.mjs)
   data/bank.json         792 otázek včetně tématických okruhů
 public/img/              242 obrázků k otázkám
+public/manifest.webmanifest  + ikony pro instalaci
 tools/scrape.mjs         aktualizace databáze ze spspraha.cz
 tools/classify.mjs       pravidla pro tématické okruhy
+tools/sw.js              šablona service workeru (jen pro build)
+tools/vite-plugin-pwa.mjs  vygeneruje dist/sw.js se seznamem souborů
 ```
 
 Neoficiální pomůcka pro přípravu – závazné je vždy zadání skutečné zkoušky.

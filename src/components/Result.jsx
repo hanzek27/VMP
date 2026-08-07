@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import QuestionView from './QuestionView'
 import { getCategory, groupLabel } from '../categories'
 import { formatDuration, isScored, plural, scoreByGroup, scoreSession } from '../lib/exam'
+import { useBackGuard } from '../lib/backGuard'
 import { topicLabel } from '../topics'
 
 function Ring({ percent, passed }) {
@@ -37,6 +38,7 @@ export default function Result({
   const mistakes = session.mode === 'mistakes'
   const isTopic = session.mode === 'topic'
   const [onlyWrong, setOnlyWrong] = useState(scored)
+  useBackGuard(true, onHome)
 
   const score = useMemo(() => scoreSession(session), [session])
   const groups = useMemo(() => scoreByGroup(session), [session])
