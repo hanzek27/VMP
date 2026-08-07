@@ -1,5 +1,5 @@
-import { useMemo } from 'react'
-import { imgUrl } from './QuestionView'
+import { useMemo, useState } from 'react'
+import Lightbox, { ZoomImage } from './Lightbox'
 import { getCategory, imageCards, topicsOf } from '../categories'
 import { plural } from '../lib/exam'
 import { useBackGuard } from '../lib/backGuard'
@@ -12,6 +12,7 @@ import { topicIcon } from '../topics'
  */
 export default function Explainer({ categoryId, onBack }) {
   const cat = getCategory(categoryId)
+  const [zoom, setZoom] = useState(null)
   useBackGuard(true, onBack)
 
   const groups = useMemo(() => {
@@ -60,7 +61,12 @@ export default function Explainer({ categoryId, onBack }) {
                 <li key={card.n} className="explain__card">
                   <div className="explain__figs">
                     {card.img.map((name) => (
-                      <img key={name} src={imgUrl(name)} alt="" loading="lazy" />
+                      <ZoomImage
+                        key={name}
+                        img={name}
+                        caption={card.answer || card.lead.replace(/\s*:$/, '')}
+                        onZoom={setZoom}
+                      />
                     ))}
                   </div>
                   <div className="explain__body">
@@ -84,6 +90,10 @@ export default function Explainer({ categoryId, onBack }) {
           </section>
         ))}
       </main>
+
+      {zoom && (
+        <Lightbox img={zoom.img} caption={zoom.caption} onClose={() => setZoom(null)} />
+      )}
     </div>
   )
 }

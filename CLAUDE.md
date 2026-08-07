@@ -114,15 +114,18 @@ src/
     QuestionView.jsx   one question + options — shared by Exam and Result
     Result.jsx         score/pass-fail, per-set breakdown, answer review
     Explainer.jsx      picture + correct answer, browse-only (no session)
+    Cheatsheet.jsx     renders one tahák from data/cheatsheets.js
+    Lightbox.jsx       tap-to-enlarge picture overlay + its ZoomImage thumbnail
     OfflineSection.jsx offline/install block inside Settings
     UpdateToast.jsx    "new version" bar, rendered over every screen
 ```
 
 `App.jsx` is the whole router: a `view` string
-(`home|settings|exam|result|explain`) plus one `session` object. No
+(`home|settings|exam|result|explain|crib`) plus one `session` object. No
 react-router, no state library. Session shape is built by `createSession()` in
-`src/lib/exam.js`. `explain` is the odd one out — it holds a category id, not a
-session, because the explainer never records an answer.
+`src/lib/exam.js`. `explain` and `crib` are the odd ones out — they hold a
+category id and a cheat-sheet id, not a session, because neither screen records
+an answer.
 
 ### Three modes
 
@@ -145,6 +148,38 @@ plavidel" reads badly.
 
 `learn` has no button of its own any more: the category card offers *Procvičit*,
 which opens the topic picker with "Všechny otázky" as its first row.
+
+### Tap-to-enlarge (`Lightbox.jsx`)
+
+`<ZoomImage img caption onZoom>` replaces a plain `<img>` inside a picture
+frame and `<Lightbox>` shows it full width; the tahák and the explainer both
+use them, the exam deliberately does not (an answer image lives inside the
+answer button, so a tap there has to select). The button carries the label and
+the picture keeps `alt=""` — the meaning is always written next to it.
+
+The overlay claims a back-guard entry like every other closable thing, so the
+system back button closes the picture and leaves the screen behind it alone.
+`.zoom` must keep `max-width: 100%`: the frames are `justify-items: center`
+grids, so a button sized to its content would otherwise be as wide as the
+source image.
+
+### Taháky (`Cheatsheet.jsx` + `src/data/cheatsheets.js`)
+
+The "Taháky" block on the home page. A tahák is hand-written prose that
+explains *why* a group of signals looks the way it does, so the pictures stop
+being 82 unrelated things to memorise. Also not a mode: no session, no scoring.
+
+The sheets are pure data — `CHEATSHEETS` is a list of
+`{ id, categoryId, topic, title, subtitle, icon, lead, sections }`, and each
+section holds blocks of five kinds (`lead`, `rules`, `cards`, `facts`, `warn`)
+that `<Block>` switches on. Adding a sheet is pushing another object; the home
+list and the router need no change. `topic` is what the sheet's *Procvičit*
+button launches, so it must be a real `q.topic` of `categoryId`.
+
+Card images are plain `public/img` filenames, the same files the questions use
+— `img` is the night signal, optional `day` the daytime shape below it. There
+is currently one sheet: `svetla-m` (M / `svetla-plavidel`), covering 55 of the
+topic's 56 pictures (`410A.jpg` is a duplicate of `410.jpg`).
 
 ### Obrázkový supervysvětlovač (`Explainer.jsx`)
 
