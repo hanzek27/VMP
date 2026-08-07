@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { CATEGORIES, getCategory, topicsOf, totalQuestions } from '../categories'
 import { formatDuration } from '../lib/exam'
+import { useBackGuard } from '../lib/backGuard'
+import { useInstall } from '../lib/pwa'
 import { topicIcon } from '../topics'
 
 const dateFmt = new Intl.DateTimeFormat('cs-CZ', {
@@ -19,6 +21,8 @@ export default function Home({
   onSettings,
 }) {
   const [picker, setPicker] = useState(null)
+  const { canInstall, install } = useInstall()
+  useBackGuard(!!picker, () => setPicker(null))
 
   return (
     <div className="page">
@@ -28,6 +32,11 @@ export default function Home({
             <p className="hero__eyebrow">Státní plavební správa</p>
             <h1>Přípravné testy VMP</h1>
             <p className="hero__lead">Hromada kravin a nesrovnalostí prostě to nabifluj</p>
+            {canInstall && (
+              <button className="btn btn--install hero__install" onClick={install}>
+                <span aria-hidden="true">⤓</span> Instalovat aplikaci
+              </button>
+            )}
           </div>
           <button className="btn btn--ghost hero__settings" onClick={onSettings}>
             <span aria-hidden="true">⚙</span> Nastavení

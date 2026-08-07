@@ -27,6 +27,8 @@ const TOGGLES = [
 ]
 
 import { CATEGORIES } from '../categories'
+import { useBackGuard } from '../lib/backGuard'
+import OfflineSection from './OfflineSection'
 
 export default function Settings({
   settings,
@@ -39,6 +41,7 @@ export default function Settings({
   const rows = CATEGORIES.map((c) => ({ c, n: missed[c.id]?.length ?? 0 })).filter(
     (r) => r.n > 0
   )
+  useBackGuard(true, onBack)
 
   return (
     <div className="page">
@@ -100,6 +103,8 @@ export default function Settings({
             </ul>
           )}
         </section>
+
+        <OfflineSection />
 
         <div className="notice notice--muted">
           Režimy <strong>Procvičování</strong> a <strong>Jen moje chyby</strong>{' '}

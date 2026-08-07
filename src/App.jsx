@@ -3,6 +3,7 @@ import Home from './components/Home'
 import Settings from './components/Settings'
 import Exam from './components/Exam'
 import Result from './components/Result'
+import UpdateToast from './components/UpdateToast'
 import { createSession, isScored, scoreSession, sessionOutcome } from './lib/exam'
 import { useHistory, useMissed, useSettings } from './lib/storage'
 import { getCategory } from './categories'
@@ -54,8 +55,10 @@ export default function App() {
     setView('home')
   }, [])
 
+  // one screen at a time, plus the update prompt which may appear over any of them
+  let screen
   if (view === 'exam' && session)
-    return (
+    screen = (
       <Exam
         session={session}
         settings={settings}
@@ -64,9 +67,8 @@ export default function App() {
         onQuit={home}
       />
     )
-
-  if (view === 'result' && session)
-    return (
+  else if (view === 'result' && session)
+    screen = (
       <Result
         session={session}
         missedCount={missed[session.categoryId]?.length ?? 0}
@@ -75,9 +77,8 @@ export default function App() {
         onPracticeMistakes={() => start(session.categoryId, 'mistakes')}
       />
     )
-
-  if (view === 'settings')
-    return (
+  else if (view === 'settings')
+    screen = (
       <Settings
         settings={settings}
         missed={missed}
@@ -87,15 +88,22 @@ export default function App() {
         onBack={home}
       />
     )
+  else
+    screen = (
+      <Home
+        settings={settings}
+        history={history}
+        missed={missed}
+        onClearHistory={clearHistory}
+        onStart={start}
+        onSettings={() => setView('settings')}
+      />
+    )
 
   return (
-    <Home
-      settings={settings}
-      history={history}
-      missed={missed}
-      onClearHistory={clearHistory}
-      onStart={start}
-      onSettings={() => setView('settings')}
-    />
+    <>
+      {screen}
+      <UpdateToast />
+    </>
   )
 }

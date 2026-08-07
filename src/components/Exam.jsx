@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import QuestionView, { imgUrl } from './QuestionView'
 import { getCategory } from '../categories'
 import { formatDuration, isScored, plural } from '../lib/exam'
+import { useBackGuard } from '../lib/backGuard'
 import { topicLabel } from '../topics'
 
 function useCountdown(deadline, onExpire) {
@@ -44,6 +45,12 @@ export default function Exam({ session, settings, onChange, onFinish, onQuit }) 
   const [current, setCurrent] = useState(0)
   const [navOpen, setNavOpen] = useState(false)
   const [confirm, setConfirm] = useState(null) // 'quit' | 'finish' | null
+
+  // system back: close what is open, and never drop out of a running exam
+  // without the same confirmation the ✕ button asks for
+  useBackGuard(true, () => setConfirm('quit'))
+  useBackGuard(navOpen, () => setNavOpen(false))
+  useBackGuard(!!confirm, () => setConfirm(null))
 
   const finishRef = useRef(onFinish)
   finishRef.current = onFinish
