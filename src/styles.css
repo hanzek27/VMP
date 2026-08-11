@@ -2081,12 +2081,88 @@ img {
   color: var(--muted);
 }
 
-.crib__cards {
+.crib__cards,
+.crib__signals {
   list-style: none;
   margin: 0 0 12px;
   padding: 0;
   display: grid;
   gap: 10px;
+}
+
+/* ---- sound signals: the rhythm drawn next to the meaning ---- */
+.crib__signal {
+  display: flex;
+  gap: 12px;
+  padding: 10px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+/* fixed width so the strips line up into a column – and wide enough that three
+   long blasts plus the "and on it goes" ellipsis still fit on one line */
+.crib__rhythm {
+  flex: none;
+  width: 126px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 3px;
+  align-content: center;
+  padding: 8px 6px;
+  background: var(--sand);
+  border-radius: 10px;
+}
+
+.crib__blip {
+  display: grid;
+  place-items: center;
+  height: 11px;
+  border-radius: 3px;
+  background: var(--teal);
+}
+
+/* 4 s long, 1 s short, and a very short one shorter still */
+.crib__blip--L {
+  width: 30px;
+  background: var(--navy);
+}
+
+.crib__blip--S {
+  width: 11px;
+}
+
+.crib__blip--V {
+  width: 5px;
+  background: var(--flag);
+}
+
+.crib__blip--B {
+  width: 30px;
+  height: 18px;
+  font-size: 0.7rem;
+  background: var(--navy-2);
+}
+
+@media (prefers-color-scheme: dark) {
+  .crib__blip--L,
+  .crib__blip--B {
+    background: #7fd3ce;
+  }
+}
+
+/* forces a line break between groups, so "3 dlouhé + 1 krátký" reads as two */
+.crib__gap {
+  flex-basis: 100%;
+  height: 0;
+}
+
+.crib__more {
+  font-size: 0.8rem;
+  font-weight: 700;
+  line-height: 0.6;
+  color: var(--muted);
 }
 
 .crib__card {
