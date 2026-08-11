@@ -3,18 +3,24 @@
  * does, instead of drilling the question one more time.
  *
  * A sheet is pure data so the renderer (components/Cheatsheet.jsx) stays dumb
- * and a second sheet is a matter of pushing another object here. It points at
- * a category + topic so the reader can jump straight into practising it.
+ * and a second sheet is a matter of adding another object to the list. Each one
+ * points at a category + topic so the reader can jump straight into practising it.
  *
  * Block kinds:
- *   lead   – a paragraph
- *   rules  – numbered "why it is like that" items  { t, d }
- *   cards  – picture + meaning, optionally with the daytime shape
- *            { img, day, t, d, tag }
- *   facts  – tight key/value list                  { k, v }
- *   warn   – a caveat callout
+ *   lead    – a paragraph
+ *   rules   – numbered "why it is like that" items  { t, d }
+ *   cards   – picture + meaning, optionally with the daytime shape
+ *             { img, day, t, d, tag }
+ *   signals – a sound signal drawn as its rhythm      { code, t, d, tag }
+ *   facts   – tight key/value list                  { k, v }
+ *   warn    – a caveat callout
  *
  * Image names are the same files the questions use (public/img).
+ *
+ * A `signals` code is one char per blip: L long (4 s), S short (1 s), V very
+ * short, B a series of strokes on the bell (4 s), `-` a gap between groups and
+ * `…` "and it carries on". The written-out `t` says the same thing, so the strip
+ * is decoration – nothing depends on reading it.
  */
 export const CHEATSHEETS = [
   {
@@ -670,6 +676,432 @@ export const CHEATSHEETS = [
       },
     ],
   },
+  {
+    id: 'zvuky-m',
+    categoryId: 'M',
+    topic: 'zvukove-signaly',
+    icon: '🔊',
+    title: 'Zvukové signály',
+    subtitle: 'M a M20 · 22 otázek okruhu',
+    lead:
+      'Zvukové signály vypadají jako dvacet dva náhodných kombinací pípání, ' +
+      'ale je to skládačka ze dvou dílků – krátkého a dlouhého zvuku – a ta má ' +
+      'gramatiku. Počet krátkých říká, jak moc plavidlo ztrácí kontrolu. Dlouhé ' +
+      'zvuky volají „pozor“. A co se donekonečna opakuje, je nouze. Naučit se ' +
+      'dá skoro všechno kromě čtyř čísel a jedné pasti se zvonem.',
+    sections: [
+      /* --------------------------------------------------------------- 1 */
+      {
+        icon: '⏱',
+        title: 'Dva dílky, ze kterých se skládá všechno',
+        blocks: [
+          {
+            kind: 'lead',
+            text:
+              'Celá abeceda má čtyři znaky a tři z nich se liší jen délkou. ' +
+              'Sekundy nejsou dekorace – zkouška se na ně ptá přímo.',
+          },
+          {
+            kind: 'facts',
+            items: [
+              { k: 'Krátký zvuk', v: '1 sekunda' },
+              { k: 'Dlouhý zvuk', v: '4 sekundy' },
+              { k: 'Velmi krátký zvuk', v: 'kratší než krátký – používá se jen v řadě za sebou' },
+              {
+                k: 'Řada úderů na zvon',
+                v: '4 sekundy; lze nahradit řadou úderů kovu o kov stejné délky',
+              },
+            ],
+          },
+          {
+            kind: 'rules',
+            items: [
+              {
+                t: '1 a 4 sekundy – a zvon je taky 4',
+                d:
+                  'Dlouhý zvuk a řada úderů na zvon trvají stejně dlouho. Zvon ' +
+                  'je vlastně „dlouhý zvuk stojícího plavidla“ – a taky se tak ' +
+                  'používá, viz mlha.',
+              },
+              {
+                t: 'Materiál je jedno, délka ne',
+                d:
+                  'Zvon smí zastoupit cokoli, čím jde bušit kov o kov, jen to ' +
+                  'musí trvat ty 4 sekundy. Stejná logika jako u balónů a kuželů ' +
+                  've světlech: rozhoduje, co je z dálky poznat.',
+              },
+            ],
+          },
+        ],
+      },
+
+      /* --------------------------------------------------------------- 2 */
+      {
+        icon: '🔢',
+        title: 'Krátké zvuky se počítají: čím víc, tím méně ovládám',
+        blocks: [
+          {
+            kind: 'lead',
+            text:
+              'Pět signálů, jeden žebříček. Od „točím volantem“ přes „couvám“ ' +
+              'až po „nejde to“. Když si zapamatuješ, že počet roste s velikostí ' +
+              'problému, nemusíš si pamatovat pětkrát nic.',
+          },
+          {
+            kind: 'signals',
+            items: [
+              { code: 'S', t: '1 krátký', d: 'Pluji doprava.', tag: 'kormidlo' },
+              { code: 'SS', t: '2 krátké', d: 'Pluji doleva.', tag: 'kormidlo' },
+              { code: 'SSS', t: '3 krátké', d: 'Stroj má zpětný chod.', tag: 'stroj' },
+              {
+                code: 'SSSS',
+                t: '4 krátké',
+                d: 'Nejsem schopen manévrování.',
+                tag: 'už neovládám',
+              },
+              {
+                code: 'SSSSS',
+                t: '5 krátkých',
+                d: 'Předjíždění nelze uskutečnit – s ohledem na možné nebezpečí kolize.',
+                tag: 'odmítnutí',
+              },
+            ],
+          },
+          {
+            kind: 'rules',
+            items: [
+              {
+                t: '1 – 2 – 3 je kormidlo, kormidlo, stroj',
+                d:
+                  'Jeden krátký doprava, dva doleva, tři zpětný chod. Přesně ' +
+                  'tohle platí i na moři (COLREG), takže se to učíš jen jednou ' +
+                  'pro obě zkoušky.',
+              },
+              {
+                t: 'Od čtyř výš už to není manévr, ale hlášení',
+                d:
+                  'Čtyři = neumím manévrovat, pět = tvůj manévr nepřipouštím. ' +
+                  'Ani jedno neříká, kam pluju – proto se to nedá splést s ' +
+                  'jedním a dvěma.',
+              },
+              {
+                t: 'Doprava = 1, doleva = 2',
+                d:
+                  'Zapamatuj si to jako jediné pravidlo a vyřeší ti šest ' +
+                  'signálů, ne dva – vrací se to v obratech i ve vyplouvání ' +
+                  'z přístavu.',
+              },
+            ],
+          },
+        ],
+      },
+
+      /* --------------------------------------------------------------- 3 */
+      {
+        icon: '🧩',
+        title: 'Signál je věta: hlava říká co, ocas kam',
+        blocks: [
+          {
+            kind: 'lead',
+            text:
+              'Složené signály nejsou nové signály. Vpředu je manévr, vzadu ' +
+              'směr – a směr se počítá pořád stejně: jeden krátký doprava, dva ' +
+              'krátké doleva.',
+          },
+          {
+            kind: 'signals',
+            items: [
+              { code: 'L', t: '1 dlouhý', d: 'Pozor.', tag: 'hlava: pozor' },
+              {
+                code: 'L-S',
+                t: '1 dlouhý + 1 krátký',
+                d: 'Mám v úmyslu provést obrat doprava.',
+              },
+              {
+                code: 'L-SS',
+                t: '1 dlouhý + 2 krátké',
+                d: 'Mám v úmyslu provést obrat doleva.',
+              },
+              {
+                code: 'LLL',
+                t: '3 dlouhé',
+                d: 'Mám v úmyslu přeplout vodní cestu.',
+                tag: 'hlava: přeplouvám',
+              },
+              {
+                code: 'LLL-S',
+                t: '3 dlouhé + 1 krátký',
+                d: 'Mám v úmyslu vyplout z přístavu doprava.',
+              },
+              {
+                code: 'LLL-SS',
+                t: '3 dlouhé + 2 krátké',
+                d: 'Mám v úmyslu vplout do přístavu doleva.',
+              },
+            ],
+          },
+          {
+            kind: 'rules',
+            items: [
+              {
+                t: 'Ocas je vždycky směr',
+                d:
+                  'Ať je vpředu cokoli, jeden krátký na konci znamená doprava a ' +
+                  'dva doleva. Nikdy naopak.',
+              },
+              {
+                t: 'Hlava je manévr',
+                d:
+                  'Jeden dlouhý = „pozor, něco udělám“ (obrat). Tři dlouhé = ' +
+                  '„křižuji vodní cestu“ (přístav, přejezd na druhou stranu). ' +
+                  'Bez ocasu je to čisté přeplutí.',
+              },
+              {
+                t: 'Manévrové signály jsou pro velká plavidla',
+                d:
+                  'Otázky na obrat a na odmítnuté předjíždění jsou formulované ' +
+                  'pro „plavidlo, které není malým“. Malé plavidlo tyhle signály ' +
+                  'nedává.',
+              },
+            ],
+          },
+        ],
+      },
+
+      /* --------------------------------------------------------------- 4 */
+      {
+        icon: '📣',
+        title: '„Jeden dlouhý“ je univerzální pozor',
+        blocks: [
+          {
+            kind: 'lead',
+            text:
+              'Jediný signál, který se v otázkách objevuje pořád znovu, v pěti ' +
+              'různých situacích. Pokaždé znamená totéž: pozor, jsem tady, ' +
+              'nevidím za rohem.',
+          },
+          {
+            kind: 'facts',
+            items: [
+              { k: 'Prostě pozor', v: 'základní význam signálu' },
+              {
+                k: 'Před nepřehlednou úžinou',
+                v: 'a je-li úžina dlouhá, opakovat i při proplouvání',
+              },
+              {
+                k: 'Lano přívozu v dráze',
+                v: 'žádost o uvolnění plavební dráhy',
+              },
+              {
+                k: 'Za snížené viditelnosti',
+                v: 'samostatně plující plavidlo, opakovaně nejméně 1× za minutu',
+              },
+              {
+                k: 'Malé plavidlo v mlze',
+                v: 'bez radiolokátoru dává stejný signál – 1 dlouhý za minutu',
+              },
+            ],
+          },
+        ],
+      },
+
+      /* --------------------------------------------------------------- 5 */
+      {
+        icon: '🌫',
+        title: 'Mlha: co se opakuje každou minutu',
+        blocks: [
+          {
+            kind: 'lead',
+            text:
+              'Za snížené viditelnosti se signál opakuje v intervalech ne ' +
+              'delších než jedna minuta a rozděluje se podle jedné otázky: ' +
+              'pluju, nebo stojím? Kdo pluje, troubí. Kdo stojí, zvoní.',
+          },
+          {
+            kind: 'signals',
+            items: [
+              {
+                code: 'L…',
+                t: '1 dlouhý, každou minutu',
+                d: 'Samostatně plující plavidlo.',
+                tag: 'pluji',
+              },
+              {
+                code: 'LL…',
+                t: '2 dlouhé, každou minutu',
+                d: 'Sestava plavidel.',
+                tag: 'pluji',
+              },
+              {
+                code: 'B…',
+                t: '1 řada úderů na zvon, každou minutu',
+                d: 'Stojím na levé straně plavební dráhy.',
+                tag: 'stojím',
+              },
+              {
+                code: 'B-B…',
+                t: '2 řady úderů na zvon, každou minutu',
+                d: 'Stojím na pravé straně plavební dráhy.',
+                tag: 'stojím',
+              },
+              {
+                code: 'B-B-B…',
+                t: '3 řady úderů na zvon, každou minutu',
+                d: 'Stojím v neurčité poloze.',
+                tag: 'stojím',
+              },
+            ],
+          },
+          {
+            kind: 'rules',
+            items: [
+              {
+                t: 'Troubení = jedu, zvon = stojím',
+                d:
+                  'Celá pětice se tím rozpadne na dvě trojice. Zvon nemá jak ' +
+                  'oznámit směr, protože stojící plavidlo nikam nepluje – ' +
+                  'oznamuje polohu.',
+              },
+              {
+                t: 'Počet dlouhých = kolik nás pluje',
+                d: 'Jeden dlouhý jedno plavidlo, dva dlouhé celá sestava. Nic jiného za tím není.',
+              },
+              {
+                t: 'Počet řad na zvon = kde stojím',
+                d:
+                  'Jedna řada levá strana, dvě řady pravá, tři řady „nevím / ' +
+                  'neurčitá poloha“. Tři jsou logické: když nemůžeš říct stranu, ' +
+                  'odzvoníš obě a ještě jednu.',
+              },
+            ],
+          },
+          {
+            kind: 'warn',
+            text:
+              'Tady se pravidlo „doprava = 1“ obrací! U zvonu je 1 řada LEVÁ ' +
+              'strana a 2 řady PRAVÁ. Ty dvě otázky jsou si navzájem nesprávnou ' +
+              'odpovědí, takže se na tom dá spolehlivě prohořet. Pomůcka: za ' +
+              'plavby se počítá jako na moři (pravá je jednička), za stání se ' +
+              'čte jako text – zleva.',
+          },
+        ],
+      },
+
+      /* --------------------------------------------------------------- 6 */
+      {
+        icon: '🆘',
+        title: 'Nouze a kolize: „řada“ bez počtu',
+        blocks: [
+          {
+            kind: 'lead',
+            text:
+              'Když u signálu není číslo, ale slovo „řada“, nejde o manévr, ale ' +
+              'o problém. Který, to prozradí tempo: panika je rychlá, volání ' +
+              'o pomoc je dlouhé.',
+          },
+          {
+            kind: 'signals',
+            items: [
+              {
+                code: 'VVVVVVV…',
+                t: 'Řada velmi krátkých zvuků',
+                d: 'Hrozí nebezpečí kolize. Dává ho ten, kdo kolizi vidí přicházet.',
+                tag: 'teď hned',
+              },
+              {
+                code: 'LLL…',
+                t: 'Řada dlouhých zvuků',
+                d: 'Signál nouze – plavidlo se ocitlo v nouzi a žádá o pomoc.',
+                tag: 'potřebuji pomoc',
+              },
+              {
+                code: 'B-B…',
+                t: 'Opakované řady úderů na zvon',
+                d: 'Rovněž signál nouze. Zvon i troubení tu znamenají totéž.',
+                tag: 'potřebuji pomoc',
+              },
+            ],
+          },
+          {
+            kind: 'rules',
+            items: [
+              {
+                t: 'Rychlé a krátké = kolize, dlouhé a vytrvalé = nouze',
+                d:
+                  'Zní to jako to, co znamená: velmi krátké zvuky za sebou jsou ' +
+                  'zvuková panika o kolizi za pár sekund, dlouhý tón se nese ' +
+                  'daleko a znamená „přijeďte“.',
+              },
+              {
+                t: 'Nouze umí obojí',
+                d:
+                  'Plavidlo v nouzi smí dávat opakované řady úderů na zvon ' +
+                  'nebo dlouhé zvukové signály. V otázkách se objevují obě ' +
+                  'varianty a obě jsou správně.',
+              },
+            ],
+          },
+          {
+            kind: 'warn',
+            text:
+              'O nouzi versus mlhu rozhoduje interval, ne zvuk. „1 dlouhý ' +
+              'jednou za minutu“ je mlha. „Řada dlouhých“ jeden za druhým je ' +
+              'nouze. Stejně tak 1 řada na zvon za minutu = stojím v mlze, ' +
+              'kdežto opakované řady = nouze.',
+          },
+        ],
+      },
+
+      /* --------------------------------------------------------------- 7 */
+      {
+        icon: '🧠',
+        title: 'Poslední kontrola před zkouškou',
+        blocks: [
+          {
+            kind: 'rules',
+            items: [
+              {
+                t: '3 krátké jsou zpětný chod, ne „plnou silou vpřed“',
+                d: 'Nejčastější nabízená blbost. Tři krátké = couvám.',
+              },
+              {
+                t: '4 versus 5 krátkých',
+                d:
+                  '4 = nejsem schopen manévrování (to je o mně). ' +
+                  '5 = předjíždění nelze uskutečnit (to je o tobě).',
+              },
+              {
+                t: 'Řada velmi krátkých ≠ 5 krátkých ≠ řada dlouhých',
+                d:
+                  'Neurčitá řada velmi krátkých = hrozí kolize. Přesně pět ' +
+                  'krátkých = zamítnuté předjíždění. Řada dlouhých = nouze. ' +
+                  'Všechny tři si zkouška plete navzájem.',
+              },
+              {
+                t: 'Zvon v mlze je naopak',
+                d: '1 řada = levá strana, 2 řady = pravá, 3 řady = neurčitá poloha.',
+              },
+              {
+                t: 'Na moři je interval dvě minuty, ne jedna',
+                d:
+                  'Na vnitrozemí (M) se signál v mlze opakuje nejméně 1× za ' +
+                  'minutu, v kategorii C dává loď se strojním pohonem ' +
+                  '„jeden prodloužený tón“ v intervalech kratších než dvě ' +
+                  'minuty. Nepleť si zkoušky.',
+              },
+              {
+                t: 'Když si nevzpomeneš, počítej a měř',
+                d:
+                  'Kolik zvuků, jak dlouhých, a je vpředu dlouhý? Většina ' +
+                  'nabízených odpovědí se liší jen v tomhle.',
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
 ]
+
 
 export const getCheatsheet = (id) => CHEATSHEETS.find((s) => s.id === id)

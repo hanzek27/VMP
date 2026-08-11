@@ -106,6 +106,22 @@ function Block({ block, onZoom }) {
         </ol>
       )
 
+    case 'signals':
+      return (
+        <ul className="crib__signals">
+          {block.items.map((s) => (
+            <li key={s.t} className="crib__signal">
+              <Rhythm code={s.code} />
+              <div className="crib__body">
+                <p className="crib__cardtitle">{s.t}</p>
+                <p className="crib__cardtext">{s.d}</p>
+                {s.tag && <span className="crib__tag">{s.tag}</span>}
+              </div>
+            </li>
+          ))}
+        </ul>
+      )
+
     case 'cards':
       return (
         <ul className="crib__cards">
@@ -135,4 +151,29 @@ function Block({ block, onZoom }) {
     default:
       return null
   }
+}
+
+/**
+ * A sound signal drawn as its rhythm: one blip per character, wide for a long
+ * blast, narrow for a short one, `-` a gap and `…` "and on it goes". Purely
+ * decorative – the same signal is written out next to it.
+ */
+function Rhythm({ code }) {
+  return (
+    <span className="crib__rhythm" aria-hidden="true">
+      {[...code].map((ch, i) =>
+        ch === '-' ? (
+          <span key={i} className="crib__gap" />
+        ) : ch === '…' ? (
+          <span key={i} className="crib__more">
+            …
+          </span>
+        ) : (
+          <span key={i} className={`crib__blip crib__blip--${ch}`}>
+            {ch === 'B' ? '🔔' : null}
+          </span>
+        )
+      )}
+    </span>
+  )
 }

@@ -165,21 +165,34 @@ source image.
 
 ### Taháky (`Cheatsheet.jsx` + `src/data/cheatsheets.js`)
 
-The "Taháky" block on the home page. A tahák is hand-written prose that
-explains *why* a group of signals looks the way it does, so the pictures stop
-being 82 unrelated things to memorise. Also not a mode: no session, no scoring.
+The "Taháky" block on the home page. A tahák is hand-written prose that explains
+*why* a group of signals is shaped the way it is, so a topic stops being 80-odd
+unrelated things to memorise. Also not a mode: no session, no scoring.
 
 The sheets are pure data — `CHEATSHEETS` is a list of
 `{ id, categoryId, topic, title, subtitle, icon, lead, sections }`, and each
-section holds blocks of five kinds (`lead`, `rules`, `cards`, `facts`, `warn`)
-that `<Block>` switches on. Adding a sheet is pushing another object; the home
-list and the router need no change. `topic` is what the sheet's *Procvičit*
-button launches, so it must be a real `q.topic` of `categoryId`.
+section holds blocks of six kinds (`lead`, `rules`, `cards`, `signals`, `facts`,
+`warn`) that `<Block>` switches on. Adding a sheet is appending another object;
+the home list and the router need no change. `topic` is what the sheet's
+*Procvičit* button launches, so it must be a real `q.topic` of `categoryId`.
 
-Card images are plain `public/img` filenames, the same files the questions use
-— `img` is the night signal, optional `day` the daytime shape below it. There
-is currently one sheet: `svetla-m` (M / `svetla-plavidel`), covering 55 of the
-topic's 56 pictures (`410A.jpg` is a duplicate of `410.jpg`).
+Copy is rendered as **plain text** — no markdown. `*emphasis*` shows up as
+literal asterisks.
+
+Two sheets so far:
+
+- `svetla-m` (M / `svetla-plavidel`) — `cards` blocks. Images are plain
+  `public/img` filenames, the same files the questions use: `img` is the night
+  signal, optional `day` the daytime shape below it. Covers 55 of the topic's 56
+  pictures (`410A.jpg` duplicates `410.jpg`).
+- `zvuky-m` (M / `zvukove-signaly`) — `signals` blocks, because the topic has no
+  pictures at all. A `code` string draws the signal's rhythm, one char per blip:
+  `L` long (4 s), `S` short (1 s), `V` very short, `B` a bell series, `-` a
+  forced line break between groups, `…` "and on it goes". `-` is what makes
+  "3 dlouhé + 1 krátký" render as head-above-tail, which is the whole point of
+  the strip. The strip is `aria-hidden` — every signal is also written out in
+  `t`, so nothing depends on decoding it. Widths are fixed in CSS, so a code
+  longer than `LLL…` will wrap; check it at 320 px if you add one.
 
 ### Obrázkový supervysvětlovač (`Explainer.jsx`)
 
