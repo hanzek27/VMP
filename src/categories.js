@@ -1,5 +1,5 @@
 import bank from './data/bank.json'
-import { TOPICS } from './topics'
+import { TOPICS, topicIcon, topicLabel } from './topics'
 
 /**
  * Exam parameters come from the Státní plavební správa exam rules; the question
@@ -116,3 +116,16 @@ export function topicsOf(categoryId) {
     .filter((id) => counts.get(id))
     .map((id) => ({ id, label: TOPICS[categoryId][id], count: counts.get(id) }))
 }
+
+/**
+ * What to call a practice run – takes anything carrying `{ mode, topic }`, so it
+ * works for both a saved run and a session about to be created.
+ */
+export function runLabel({ categoryId, mode, topic }) {
+  if (mode === 'mistakes') return 'Moje chyby'
+  if (mode === 'topic') return topicLabel(categoryId, topic)
+  return 'Všechny otázky'
+}
+
+export const runIcon = ({ mode, topic }) =>
+  mode === 'mistakes' ? '✕' : mode === 'topic' ? topicIcon(topic) : '📚'

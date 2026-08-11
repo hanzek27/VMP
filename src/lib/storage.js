@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { packSession } from './exam'
 
 export const DEFAULT_SETTINGS = {
   /** Turn the countdown off entirely (setting #1). */
@@ -15,6 +16,7 @@ export const DEFAULT_SETTINGS = {
 const SETTINGS_KEY = 'vmp.settings.v1'
 const HISTORY_KEY = 'vmp.history.v1'
 const MISSED_KEY = 'vmp.missed.v1'
+const PROGRESS_KEY = 'vmp.progress.v1'
 
 function read(key, fallback) {
   try {
@@ -98,4 +100,50 @@ export function useMissed() {
   }, [])
 
   return [missed, record, clear]
+}
+
+/**
+ * Identity of a practice run. One saved run per category + mode + topic, so
+ * yesterday's half-done "Světla a znaky plavidel" is not overwritten by today's
+ * "Zvukové signály".
+ */
+export const progressKey = ({ categoryId, mode, topic }) =>
+  `${categoryId}:${mode}:${topic ?? ''}`
+
+/**
+ * Unfinished practice runs, so closing the app mid-training is not a loss. Only
+ * the practice modes land here – a scored test either gets submitted or is gone,
+ * which is what the exam does too. `packSession()` decides what is worth saving;
+ * `save` is called on every answer and every page turn, so a killed app loses
+ * nothing.
+ */
+export function useProgress() {
+  const [runs, setRuns] = useState(() => read(PROGRESS_KEY, {}))
+
+  const save = useCallback((session) => {
+    const run = packSession(session)
+    if (!run) return
+    setRuns((r) => {
+      const next = { ...r, [progressKey(session)]: run }
+      write(PROGRESS_KEY, next)
+      return next
+    })
+  }, [])
+
+  const drop = useCallback((key) => {
+    setRuns((r) => {
+      if (!(key in r)) return r // nothing to write
+      const next = { ...r }
+      delete next[key]
+      write(PROGRESS_KEY, next)
+      return next
+    })
+  }, [])
+
+  const clear = useCallback(() => {
+    setRuns({})
+    write(PROGRESS_KEY, {})
+  }, [])
+
+  return [runs, save, drop, clear]
 }

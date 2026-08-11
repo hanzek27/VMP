@@ -129,12 +129,12 @@ an answer.
 
 ### Three modes
 
-| mode | source | scored | timed | feedback |
-| --- | --- | --- | --- | --- |
-| `exam` | proportional draw | yes | yes (unless disabled) | only if `instantFeedback` |
-| `learn` | whole bank | no | no | always |
-| `mistakes` | previously-missed only | no | no | always |
-| `topic` | one `q.topic` only | no | no | always |
+| mode | source | scored | timed | feedback | resumable |
+| --- | --- | --- | --- | --- | --- |
+| `exam` | proportional draw | yes | yes (unless disabled) | only if `instantFeedback` | no |
+| `learn` | whole bank | no | no | always | yes |
+| `mistakes` | previously-missed only | no | no | always | yes |
+| `topic` | one `q.topic` only | no | no | always | yes |
 
 Branch on **`isScored(mode)`**, not on `mode === 'learn'`. The three practice
 modes share one path; special-casing them per screen is what the `isScored`
@@ -211,8 +211,31 @@ indices — so it survives a re-scrape). A question enters on a wrong answer in
 are not recorded** (`sessionOutcome()` ignores `null`). Updated once at session
 finish, so changing an answer mid-exam behaves correctly.
 
-localStorage keys: `vmp.settings.v1`, `vmp.history.v1` (last 20), `vmp.missed.v1`.
-All reads are try/caught — private mode must not crash the app.
+### Saved practice progress
+
+`useProgress()` keeps unfinished **practice** runs, so closing the app mid-training
+is not a loss. A scored test is never saved — it gets submitted or it's gone.
+
+- Keyed `` `${categoryId}:${mode}:${topic ?? ''}` `` (`progressKey()`), so one
+  half-done topic doesn't overwrite another.
+- Stored **by reference**: question numbers + per-item option order, never the
+  question text (`packSession()`). A whole-bank M run is ~10 kB, not 240 kB.
+  Nothing is saved until at least one answer exists.
+- `unpackSession()` rebuilds it and returns **null** if anything no longer fits
+  the bank (a re-scrape renumbered or dropped a question). Callers drop the run
+  on null — a half-restored session is worse than none.
+- **`current` is part of the session**, not `Exam.jsx` local state — a resumed
+  run has to open on the question it left off. Exam's edits go through `patch()`,
+  which reads the session from a ref so two changes in one React batch both land.
+- Written on every answer *and* every page turn, from `App.change()`. Removed
+  when the run is finished, restarted, or deleted.
+- Two entry points, and neither can lose work silently: `App.start()` shows
+  `ResumeDialog` if the run it's about to create already exists (covers the topic
+  picker, "Všechny otázky", "Jen moje chyby" and the result screen's retry), and
+  Home lists the runs with resume + a confirmed delete.
+
+localStorage keys: `vmp.settings.v1`, `vmp.history.v1` (last 20), `vmp.missed.v1`,
+`vmp.progress.v1`. All reads are try/caught — private mode must not crash the app.
 
 ## PWA — installable, offline, back-button aware
 
