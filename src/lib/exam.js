@@ -116,11 +116,90 @@ export function createSession(categoryId, mode, settings, opts = {}) {
     items,
     answers: new Array(items.length).fill(null),
     flags: new Array(items.length).fill(false),
+    // which question is on screen – part of the session because a practice run
+    // is saved and has to resume on the same one
+    current: 0,
     startedAt: Date.now(),
     deadline: timed ? Date.now() + cat.timeLimitMin * 60_000 : null,
     finishedAt: null,
   }
 }
+
+/* ------------------------------------------------- saving a practice run */
+
+/**
+ * Practice progress is stored by *reference*: question numbers plus the option
+ * order, never the question text. A saved whole-bank M run is then a few kB
+ * instead of a copy of the 240 kB bank.
+ *
+ * Returns null for a run that is not worth keeping – a scored test, a finished
+ * session, or one where nothing has been answered yet.
+ */
+export function packSession(session) {
+  if (isScored(session.mode) || session.finishedAt) return null
+  if (!session.answers.some((a) => a !== null)) return null
+  return {
+    v: 1,
+    categoryId: session.categoryId,
+    mode: session.mode,
+    topic: session.topic ?? null,
+    qs: session.items.map((it) => it.q.n),
+    orders: session.items.map((it) => it.order),
+    answers: session.answers,
+    flags: session.flags,
+    current: session.current ?? 0,
+    startedAt: session.startedAt,
+    updatedAt: Date.now(),
+  }
+}
+
+/**
+ * Rebuild a runnable session from a saved run, or null if it no longer fits the
+ * bank – a re-scrape can renumber or drop a question, and a half-restored run
+ * would be worse than none.
+ */
+export function unpackSession(run) {
+  if (!run || run.v !== 1) return null
+  const bank = getQuestions(run.categoryId)
+  if (!bank) return null
+
+  const n = run.qs?.length ?? 0
+  if (!n) return null
+  if (run.orders?.length !== n || run.answers?.length !== n || run.flags?.length !== n)
+    return null
+
+  const byNumber = new Map(bank.map((q) => [q.n, q]))
+  const items = []
+  for (let i = 0; i < n; i++) {
+    const q = byNumber.get(run.qs[i])
+    const order = run.orders[i]
+    if (!q || !Array.isArray(order) || order.length !== q.a.length) return null
+    // must still be a permutation of this question's options
+    const seen = new Set(order)
+    if (seen.size !== order.length || order.some((x) => !Number.isInteger(x) || x < 0 || x >= q.a.length))
+      return null
+    items.push({ q, order, correctIdx: order.indexOf(q.correct) })
+  }
+
+  return {
+    categoryId: run.categoryId,
+    mode: run.mode,
+    topic: run.topic ?? null,
+    items,
+    answers: [...run.answers],
+    flags: [...run.flags],
+    current: Math.min(Math.max(0, Math.trunc(run.current) || 0), n - 1),
+    startedAt: run.startedAt ?? Date.now(),
+    deadline: null, // practice is never timed
+    finishedAt: null,
+  }
+}
+
+/** How far a saved run got, without unpacking it. */
+export const runProgress = (run) => ({
+  answered: run.answers.filter((a) => a !== null).length,
+  total: run.qs.length,
+})
 
 export function scoreSession(session) {
   const cat = getCategory(session.categoryId)

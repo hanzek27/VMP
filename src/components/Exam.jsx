@@ -42,7 +42,25 @@ export default function Exam({ session, settings, onChange, onFinish, onQuit }) 
   const finishNoun = session.mode === 'mistakes' ? 'opakování chyb' : 'procvičování'
   const total = session.items.length
 
-  const [current, setCurrent] = useState(0)
+  // the current question lives in the session, not in local state: a practice
+  // run is saved on every change and has to resume on the question it left off
+  const current = Math.min(session.current ?? 0, total - 1)
+
+  /* Every edit goes through here. It reads the session from a ref rather than
+   * from the render, so two changes landing in one React batch (a tap that
+   * answers *and* advances, say) both survive – the plain `{...session}` version
+   * silently kept only the last one. */
+  const latest = useRef(session)
+  latest.current = session
+  const patch = useCallback(
+    (fn) => {
+      const next = fn(latest.current)
+      latest.current = next
+      onChange(next)
+    },
+    [onChange]
+  )
+
   const [navOpen, setNavOpen] = useState(false)
   const [confirm, setConfirm] = useState(null) // 'quit' | 'finish' | null
 
@@ -61,6 +79,8 @@ export default function Exam({ session, settings, onChange, onFinish, onQuit }) 
   const item = session.items[current]
   const chosen = session.answers[current]
   const answeredCount = session.answers.filter((a) => a !== null).length
+  // a practice run is only in storage once something has been answered
+  const saved = !scored && answeredCount > 0
 
   // Practice modes always show the outcome – that is the point of them.
   const feedbackOn = !scored || settings.instantFeedback
@@ -68,24 +88,37 @@ export default function Exam({ session, settings, onChange, onFinish, onQuit }) 
     settings.markCorrect || (feedbackOn && chosen !== null) ? 'correct' : 'none'
   const locked = reveal === 'correct' && chosen !== null
 
+  const clamp = (i, n) => Math.min(n - 1, Math.max(0, i))
+
   const choose = useCallback(
-    (i) => {
-      const answers = [...session.answers]
-      answers[current] = i
-      onChange({ ...session, answers })
-    },
-    [session, current, onChange]
+    (i) =>
+      patch((s) => {
+        const answers = [...s.answers]
+        answers[s.current ?? 0] = i
+        return { ...s, answers }
+      }),
+    [patch]
   )
 
-  const toggleFlag = useCallback(() => {
-    const flags = [...session.flags]
-    flags[current] = !flags[current]
-    onChange({ ...session, flags })
-  }, [session, current, onChange])
+  const toggleFlag = useCallback(
+    () =>
+      patch((s) => {
+        const flags = [...s.flags]
+        const c = s.current ?? 0
+        flags[c] = !flags[c]
+        return { ...s, flags }
+      }),
+    [patch]
+  )
+
+  const setCurrent = useCallback(
+    (i) => patch((s) => ({ ...s, current: clamp(i, s.items.length) })),
+    [patch]
+  )
 
   const go = useCallback(
-    (delta) => setCurrent((c) => Math.min(total - 1, Math.max(0, c + delta))),
-    [total]
+    (delta) => patch((s) => ({ ...s, current: clamp((s.current ?? 0) + delta, s.items.length) })),
+    [patch]
   )
 
   useEffect(() => {
@@ -270,14 +303,23 @@ export default function Exam({ session, settings, onChange, onFinish, onQuit }) 
           <div className="dialog" onClick={(e) => e.stopPropagation()}>
             {confirm === 'quit' ? (
               <>
-                <h2>Ukončit bez vyhodnocení?</h2>
-                <p>Rozpracovaný {scored ? 'test' : 'trénink'} se neuloží.</p>
+                <h2>{scored ? 'Ukončit bez vyhodnocení?' : `Ukončit ${finishNoun}?`}</h2>
+                <p>
+                  {scored
+                    ? 'Rozpracovaný test se neuloží.'
+                    : saved
+                      ? 'Postup se uloží – příště můžeš pokračovat tam, kde jsi skončil.'
+                      : 'Zatím není co ukládat.'}
+                </p>
                 <div className="dialog__actions">
                   <button className="btn btn--soft" onClick={() => setConfirm(null)}>
                     Pokračovat
                   </button>
-                  <button className="btn btn--danger" onClick={onQuit}>
-                    Ukončit
+                  <button
+                    className={`btn ${scored ? 'btn--danger' : 'btn--primary'}`}
+                    onClick={onQuit}
+                  >
+                    {scored || !saved ? 'Ukončit' : 'Uložit a ukončit'}
                   </button>
                 </div>
               </>
@@ -289,6 +331,7 @@ export default function Exam({ session, settings, onChange, onFinish, onQuit }) 
                     ? `Bez odpovědi ${plural(total - answeredCount, 'zůstává', 'zůstávají', 'zůstává')} ` +
                       `${total - answeredCount} z ${total} otázek.`
                     : 'Zodpovězeny jsou všechny otázky.'}
+                  {saved && ' Uložený postup se tím smaže.'}
                 </p>
                 <div className="dialog__actions">
                   <button className="btn btn--soft" onClick={() => setConfirm(null)}>

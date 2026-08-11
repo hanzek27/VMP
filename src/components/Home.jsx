@@ -1,12 +1,15 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import {
   CATEGORIES,
   getCategory,
   imageCount,
+  runIcon,
+  runLabel,
   topicsOf,
   totalQuestions,
 } from '../categories'
-import { formatDuration } from '../lib/exam'
+import { formatDuration, plural, runProgress } from '../lib/exam'
+import { progressKey } from '../lib/storage'
 import { useBackGuard } from '../lib/backGuard'
 import { useInstall } from '../lib/pwa'
 import { topicIcon } from '../topics'
@@ -23,15 +26,46 @@ export default function Home({
   settings,
   history,
   missed,
+  runs,
   onClearHistory,
   onStart,
+  onResume,
+  onDropProgress,
   onExplain,
   onCrib,
   onSettings,
 }) {
   const [picker, setPicker] = useState(null)
+  const [dropKey, setDropKey] = useState(null)
   const { canInstall, install } = useInstall()
   useBackGuard(!!picker, () => setPicker(null))
+  useBackGuard(!!dropKey, () => setDropKey(null))
+
+  // unfinished practice runs, newest first
+  const resumable = useMemo(
+    () =>
+      Object.entries(runs)
+        .map(([key, run]) => {
+          const cat = getCategory(run?.categoryId)
+          if (!cat || !Array.isArray(run.answers) || !Array.isArray(run.qs)) return null
+          return {
+            key,
+            cat,
+            label: runLabel(run),
+            icon: runIcon(run),
+            updatedAt: run.updatedAt ?? 0,
+            ...runProgress(run),
+          }
+        })
+        .filter(Boolean)
+        .sort((a, b) => b.updatedAt - a.updatedAt),
+    [runs]
+  )
+  const dropping = resumable.find((r) => r.key === dropKey)
+
+  /** The saved run behind a picker row, if there is one. */
+  const runFor = (mode, topic = null) =>
+    resumable.find((r) => r.key === progressKey({ categoryId: picker, mode, topic }))
 
   return (
     <div className="page">
@@ -67,6 +101,48 @@ export default function Home({
               .filter(Boolean)
               .join(' · ')}
           </div>
+        )}
+
+        {resumable.length > 0 && (
+          <section className="resume">
+            <div className="resume__head">
+              <h2>Rozpracované procvičování</h2>
+              <p className="resume__sub">Pokračuj tam, kde jsi skončil.</p>
+            </div>
+            <ul className="resume__list">
+              {resumable.map((r) => (
+                <li key={r.key}>
+                  <button className="resume__go" onClick={() => onResume(r.key)}>
+                    <span className="resume__icon" aria-hidden="true">
+                      {r.icon}
+                    </span>
+                    <span className="resume__text">
+                      <span className="resume__name">{r.label}</span>
+                      <span className="resume__meta">
+                        {r.cat.name} · {r.answered}/{r.total}{' '}
+                        {plural(r.total, 'otázka', 'otázky', 'otázek')} ·{' '}
+                        {dateFmt.format(new Date(r.updatedAt))}
+                      </span>
+                      <span className="resume__bar" aria-hidden="true">
+                        <span style={{ width: `${Math.round((r.answered / r.total) * 100)}%` }} />
+                      </span>
+                    </span>
+                    <span className="resume__arrow" aria-hidden="true">
+                      ▸
+                    </span>
+                  </button>
+                  <button
+                    className="resume__drop"
+                    onClick={() => setDropKey(r.key)}
+                    aria-label={`Smazat postup – ${r.label}`}
+                    title="Smazat postup"
+                  >
+                    <span aria-hidden="true">✕</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </section>
         )}
 
         <section className="cards">
@@ -238,7 +314,10 @@ export default function Home({
                   <span className="topic__icon" aria-hidden="true">
                     📚
                   </span>
-                  <span className="topic__label">Všechny otázky</span>
+                  <span className="topic__label">
+                    Všechny otázky
+                    <ProgressNote run={runFor('learn')} />
+                  </span>
                   <span className="topic__count">{totalQuestions(picker)}</span>
                 </button>
               </li>
@@ -255,7 +334,10 @@ export default function Home({
                     <span className="topic__icon" aria-hidden="true">
                       {topicIcon(t.id)}
                     </span>
-                    <span className="topic__label">{t.label}</span>
+                    <span className="topic__label">
+                      {t.label}
+                      <ProgressNote run={runFor('topic', t.id)} />
+                    </span>
                     <span className="topic__count">{t.count}</span>
                   </button>
                 </li>
@@ -264,12 +346,48 @@ export default function Home({
 
             <div className="sheet__foot">
               <p className="sheet__note">
-                Procvičování se neboduje a neběží v něm čas.
+                Procvičování se neboduje a neběží v něm čas. Rozpracované se ukládá.
               </p>
             </div>
           </div>
         </div>
       )}
+
+      {dropping && (
+        <div className="sheet sheet--center" onClick={() => setDropKey(null)}>
+          <div className="dialog" onClick={(e) => e.stopPropagation()}>
+            <h2>Smazat rozpracované procvičování?</h2>
+            <p>
+              {dropping.label} ({dropping.cat.name}) – {dropping.answered} z{' '}
+              {dropping.total} otázek. Příště se začne od začátku.
+            </p>
+            <div className="dialog__actions">
+              <button className="btn btn--soft" onClick={() => setDropKey(null)}>
+                Zpět
+              </button>
+              <button
+                className="btn btn--danger"
+                onClick={() => {
+                  onDropProgress(dropping.key)
+                  setDropKey(null)
+                }}
+              >
+                Smazat
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
+  )
+}
+
+/** "rozpracováno 12/82" under a picker row that has saved progress. */
+function ProgressNote({ run }) {
+  if (!run) return null
+  return (
+    <span className="topic__note">
+      rozpracováno {run.answered}/{run.total}
+    </span>
   )
 }
