@@ -179,7 +179,7 @@ the home list and the router need no change. `topic` is what the sheet's
 Copy is rendered as **plain text** — no markdown. `*emphasis*` shows up as
 literal asterisks.
 
-Two sheets so far:
+Three sheets so far:
 
 - `svetla-m` (M / `svetla-plavidel`) — `cards` blocks. Images are plain
   `public/img` filenames, the same files the questions use: `img` is the night
@@ -193,6 +193,28 @@ Two sheets so far:
   the strip. The strip is `aria-hidden` — every signal is also written out in
   `t`, so nothing depends on decoding it. Widths are fixed in CSS, so a code
   longer than `LLL…` will wrap; check it at 320 px if you add one.
+- `barvy-m` (M / `znaky-vodni-cesty`) — the red/green system end to end: side
+  lights, fairway and bank marks, IALA lateral and cardinal buoys, the lock and
+  bridge semaphore, distress red. Eleven sections, 31 `cards`. The point it is
+  built around is that the four roles measure the side from *different*
+  directions — the bow, the current, and the run from sea into harbour — so the
+  vessel's own red-to-port never confirms a red buoy.
+
+Two things about `barvy-m` generalise to any further sheet:
+
+- **A sheet can only point at one topic, but its material may span more.** Two
+  of its sections are C (sea) content, which is why their headings say so;
+  *Procvičit* still lands in M's `znaky-vodni-cesty`. Don't try to give a sheet
+  two topics — say it in the copy instead.
+- **The M waterway marks are picture-only.** The answer text says "pravá strana
+  plavební dráhy" and never names a colour, so `bank.json` alone cannot tell you
+  that the right side is the red cylinder. That came from opening the files in
+  `public/img`; there is no image tooling in the repo, so read them one by one.
+
+Renderer traps when writing a sheet: `cards` items are keyed by `c.img`, so the
+same picture must not appear twice inside one `cards` block (split it into two
+blocks), and `facts`/`rules`/`signals` items are keyed by their `k`/`t` text, so
+two identically-worded entries in one block collide the same way.
 
 ### Obrázkový supervysvětlovač (`Explainer.jsx`)
 
@@ -341,6 +363,11 @@ persistence, and no-horizontal-overflow at 390 px.
 The explainer: both category lists complete (M 162, C 78 incl. the 16
 answer-image ones), grouped, every image loads, back returns home, no overflow
 at 390 px.
+
+A tahák: every section renders, every card image loads, no overflow at 390 px,
+and *Procvičit* opens the right topic with the right question count. Card images
+are lazy — scroll the whole page before asserting on `naturalWidth`, or you will
+"find" two dozen broken pictures that are simply below the fold.
 
 PWA, verified the same way against `vite preview`: worker registers and claims
 the page, manifest parses, app and bank boot with the network cut, "download
