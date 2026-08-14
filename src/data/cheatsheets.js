@@ -1101,7 +1101,758 @@ export const CHEATSHEETS = [
       },
     ],
   },
+
+  {
+    id: 'barvy-m',
+    categoryId: 'M',
+    topic: 'znaky-vodni-cesty',
+    icon: '🔴',
+    title: 'Barvy, strany a břehy',
+    subtitle: 'M a M20 · 106 otázek okruhu',
+    lead:
+      'Červená a zelená se v otázkách objeví na bocích plavidla, na bójích, na ' +
+      'tabulích u břehu i na semaforu plavební komory – pokaždé v jiné úloze. ' +
+      'Potíž nedělají barvy, ale směr, od kterého se strana počítá: na plavidle ' +
+      'je to příď, na řece proud a na moři cesta z moře do přístavu. Když si u ' +
+      'každého znaku nejdřív odpovíš „od čeho se ta strana měří“, zbytek je už ' +
+      'jenom dvojice barev a dvojice tvarů.',
+    sections: [
+      /* --------------------------------------------------------------- 1 */
+      {
+        icon: '🚥',
+        title: 'Jedna dvojice barev, čtyři různé úlohy',
+        blocks: [
+          {
+            kind: 'lead',
+            text:
+              'Než začneš luštit konkrétní obrázek, zařaď ho. Červená a zelená ' +
+              'znamenají něco jiného na plavidle, něco jiného na vodní cestě a ' +
+              'úplně jiného na semaforu. Uvnitř každé úlohy je to pak už ' +
+              'jednoznačné.',
+          },
+          {
+            kind: 'facts',
+            items: [
+              {
+                k: 'Na plavidle',
+                v: 'červená = levobok, zelená = pravobok; říká, kam je plavidlo natočené',
+              },
+              {
+                k: 'Na vodní cestě',
+                v: 'červená = pravá strana plavební dráhy, zelená = levá; počítáno po proudu',
+              },
+              {
+                k: 'Na semaforu',
+                v: 'červená = nesmíš, zelená = smíš; komory, mostní pole, znaky A a E',
+              },
+              {
+                k: 'V nouzi',
+                v: 'červená volá o pomoc nebo hlásí poruchu, zelená nikdy',
+              },
+            ],
+          },
+          {
+            kind: 'warn',
+            text:
+              'Většina chytáků stojí na tom, že nabídnutá odpověď použije ' +
+              'správnou barvu ve špatné úloze – „červená bóje = mám ji po ' +
+              'levoboku“ zní povědomě, protože červená je opravdu levobok, ' +
+              'jenže na plavidle, ne na řece.',
+          },
+        ],
+      },
+
+      /* --------------------------------------------------------------- 2 */
+      {
+        icon: '🚢',
+        title: 'Na plavidle: červená vlevo, zelená vpravo',
+        blocks: [
+          {
+            kind: 'lead',
+            text:
+              'Boční světla jsou to jediné, co se počítá od přídě plavidla. ' +
+              'Zelené na pravoboku, červené na levoboku, každé svítí v ' +
+              'obzorovém výseku 112,5°. Nad nimi silné bílé vrcholové (225°), ' +
+              'vzadu bílé záďové (135°). Nic z toho se nikdy neprohodí, ať ' +
+              'plavidlo pluje kamkoli.',
+          },
+          {
+            kind: 'cards',
+            items: [
+              {
+                img: '211.jpg',
+                t: 'Samostatně plující plavidlo s vlastním pohonem',
+                d:
+                  'Vrcholové bílé vpředu a vysoko, boční červené a zelené na ' +
+                  'bocích, záďové bílé vzadu. Z každého směru vidíš jinou ' +
+                  'kombinaci – a právě z ní poznáš, kam plavidlo míří.',
+                tag: 'Zelená vpravo, červená vlevo – od přídě',
+              },
+            ],
+          },
+          {
+            kind: 'rules',
+            items: [
+              {
+                t: 'Levobok je červený, ať se děje co se děje',
+                d:
+                  'Boční světla popisují plavidlo, ne okolí. Nezávisí na ' +
+                  'proudu, na břehu ani na tom, kudy plaveš. Tohle je jediná ' +
+                  'barva v celé zkoušce, která se nikdy nevztahuje k ničemu ' +
+                  'vnějšímu.',
+              },
+              {
+                t: 'Z barev se čte natočení',
+                d:
+                  'Červené i zelené naráz = jede přímo na tebe. Jen zelené = ' +
+                  'díváš se mu na pravobok. Jen červené = na levobok. Jen ' +
+                  'bílé nízko = koukáš mu na záď a předjíždíš ho.',
+              },
+              {
+                t: 'Červená napravo znamená, že ustupuješ ty',
+                d:
+                  'Když se kurzy kříží a vidíš červené světlo, máš druhé ' +
+                  'plavidlo zpravidla po svém pravoboku – a plavidlo, které má ' +
+                  'druhé na pravém boku, dává přednost. Zelené světlo tedy ' +
+                  'obvykle znamená, že přednost máš ty. Rozhoduje ale poloha, ' +
+                  'ne barva: barva je jen rychlá kontrola, že sis polohu ' +
+                  'přečetl správně.',
+              },
+              {
+                t: 'Zbytek světel rozebírá jiný tahák',
+                d:
+                  'Sloupce světel na stěžni, hranice sedmi metrů a denní ' +
+                  'znaky jsou v taháku Světla a znaky plavidel. Tady jde jen ' +
+                  'o to, že boční světla jsou zdrojem té „správné“ představy ' +
+                  'červená–vlevo, kterou pak na řece nesmíš použít.',
+              },
+            ],
+          },
+        ],
+      },
+
+      /* --------------------------------------------------------------- 3 */
+      {
+        icon: '🌊',
+        title: 'Na vodní cestě: strany se počítají po proudu',
+        blocks: [
+          {
+            kind: 'lead',
+            text:
+              'Pravý a levý břeh nejsou „vpravo a vlevo ode mě“. Určují se ve ' +
+              'směru po proudu, tedy směrem k ústí; proti proudu se pluje k ' +
+              'prameni. Plavební dráha má strany podle stejného klíče, a znaky ' +
+              'se kvůli tomu, kudy zrovna plaveš, nepřebarvují.',
+          },
+          {
+            kind: 'facts',
+            items: [
+              { k: 'Pravá strana dráhy', v: 'červená, tvar válce – červená válcová bóje' },
+              { k: 'Levá strana dráhy', v: 'zelená, tvar kužele – zelená kuželová bóje' },
+              {
+                k: 'Rozdělení dráhy',
+                v: 'koule s vodorovnými červenými a zelenými pruhy',
+              },
+              {
+                k: 'Bílé „P“ na bóji strany',
+                v: 'plavební dráha vede podél míst stání',
+              },
+              { k: 'Po proudu', v: 'směr k ústí – tímhle směrem se strany pojmenovaly' },
+              { k: 'Proti proudu', v: 'směr k prameni – strany zůstávají, otočil ses jen ty' },
+            ],
+          },
+          {
+            kind: 'cards',
+            items: [
+              {
+                img: 'II1A.jpg',
+                t: 'Červená válcová bóje',
+                d: 'Pravá strana plavební dráhy.',
+                tag: 'Červená = válec = pravá',
+              },
+              {
+                img: 'II2b.jpg',
+                t: 'Zelená kuželová bóje',
+                d: 'Levá strana plavební dráhy.',
+                tag: 'Zelená = kužel = levá',
+              },
+              {
+                img: 'II3A.jpg',
+                t: 'Koule s červenými a zelenými pruhy',
+                d:
+                  'Rozdělení plavební dráhy – místo, kde se dráha dělí. Obě ' +
+                  'barvy naráz proto, že za bójí pokračují obě strany.',
+              },
+              {
+                img: 'II4B.jpg',
+                t: 'Bílé písmeno P na bóji strany',
+                d:
+                  'Plavební dráha vede podél míst stání. Písmeno se přidává k ' +
+                  'běžné bóji strany, barva a tvar zůstávají v původním významu.',
+              },
+            ],
+          },
+          {
+            kind: 'rules',
+            items: [
+              {
+                t: 'Tvar nese tutéž informaci jako barva',
+                d:
+                  'Válec vpravo, kužel vlevo. V protisvětle, za šera nebo při ' +
+                  'barvosleposti je silueta jediné, co zbude – proto se ' +
+                  'tvarová dvojice objevuje i ve vrcholových znacích a na ' +
+                  'tabulích u břehu.',
+              },
+              {
+                t: 'Bóje strany označuje kraj dráhy, ne překážku',
+                d:
+                  'Voda pro tebe je mezi červenou a zelenou. Bóje neříká ' +
+                  '„tady je něco“, ale „tady dráha končí“.',
+              },
+            ],
+          },
+        ],
+      },
+
+      /* --------------------------------------------------------------- 4 */
+      {
+        icon: '🪧',
+        title: 'Tytéž strany na břehu, jen v jiném tvaru',
+        blocks: [
+          {
+            kind: 'lead',
+            text:
+              'Znaky umístěné na břehu říkají, kde v korytě dráha leží nebo kde ' +
+              'je nebezpečí. Barva funguje stejně jako u bójí – červená patří k ' +
+              'pravému břehu, zelená k levému – a tvar tu barvu podruhé ' +
+              'potvrzuje: pravý břeh dostává čtverec nebo obdélník, levý ' +
+              'trojúhelník nebo kosočtverec.',
+          },
+          {
+            kind: 'cards',
+            items: [
+              {
+                img: '4b.jpg',
+                t: 'Červená obdélníková tabule',
+                d: 'Plavební dráha při pravém břehu.',
+                tag: 'Pravý břeh: červená, hranatá',
+              },
+              {
+                img: '5b.jpg',
+                t: 'Zelený trojúhelník v bílém kosočtverci',
+                d: 'Plavební dráha při levém břehu.',
+                tag: 'Levý břeh: zelená, špičatá',
+              },
+              {
+                img: '4f.jpg',
+                t: 'Červený kužel vrcholem dolů',
+                d: 'Nebezpečné místo nebo překážka při pravém břehu.',
+              },
+              {
+                img: '5f.jpg',
+                t: 'Zelený kužel vrcholem vzhůru',
+                d: 'Nebezpečné místo nebo překážka při levém břehu.',
+              },
+              {
+                img: '1f1.jpg',
+                t: 'Červenobíle pruhovaná tyč s červeným válcem',
+                d: 'Označení překážky při pravém břehu.',
+              },
+              {
+                img: '2f.jpg',
+                t: 'Zelenobíle pruhovaná tyč se zeleným kuželem',
+                d: 'Označení překážky při levém břehu.',
+              },
+              {
+                img: '4d.jpg',
+                t: 'Žlutočerný čtverec',
+                d:
+                  'Pravobřežní přechodový signální znak – dráha přechází od ' +
+                  'jednoho břehu ke druhému.',
+                tag: 'Barva mlčí, stranu říká tvar',
+              },
+              {
+                img: '5d.jpg',
+                t: 'Žlutočerný kosočtverec',
+                d: 'Levobřežní přechodový signální znak.',
+              },
+            ],
+          },
+          {
+            kind: 'rules',
+            items: [
+              {
+                t: 'Přechodové znaky jsou výjimka: nejsou červenozelené',
+                d:
+                  'Jsou žluté s černým svislým pruhem a stranu prozradí jen ' +
+                  'tvar – čtverec je pravobřežní, kosočtverec levobřežní. ' +
+                  'Je to jediná dvojice v okruhu, kde barva o straně nic neříká.',
+              },
+              {
+                t: 'Tabule může udávat i vzdálenost',
+                d:
+                  'Znak „plavební dráha je vzdálena od pravého (levého) břehu ' +
+                  '10 m“ pracuje se stejným pojmem strany – měřeno po proudu.',
+              },
+            ],
+          },
+        ],
+      },
+
+      /* --------------------------------------------------------------- 5 */
+      {
+        icon: '🔁',
+        title: 'Proč to nesedí s tvými vlastními světly',
+        blocks: [
+          {
+            kind: 'lead',
+            text:
+              'Tady vzniká skoro celý zmatek. Obě soustavy jsou samy o sobě ' +
+              'jednoduché, ale každá měří stranu od něčeho jiného, takže se ' +
+              'navzájem nepotvrzují.',
+          },
+          {
+            kind: 'rules',
+            items: [
+              {
+                t: 'Plujeme po proudu: červené bóje po pravoboku',
+                d:
+                  'Pravá strana dráhy je červená a při plavbě po proudu je ' +
+                  'tvá pravá strana totožná s pravou stranou dráhy. Zelené ' +
+                  'kužele máš tedy po levoboku – přesně naopak, než svítíš ty sám.',
+              },
+              {
+                t: 'Plujeme proti proudu: červené bóje po levoboku',
+                d:
+                  'Bóje se nepřebarvily, otočil ses ty. Pravá strana dráhy je ' +
+                  'pořád táž strana koryta, jen ji teď míjíš zleva.',
+              },
+              {
+                t: 'Nehledej v tom souhlas s bočními světly',
+                d:
+                  'Boční světla popisují plavidlo, bóje popisují koryto. Že ' +
+                  'používají tytéž dvě barvy, je historická shoda, ne ' +
+                  'pravidlo, ze kterého se dá jedno odvodit z druhého.',
+              },
+              {
+                t: 'Příkazové tabule řady B mluví naopak o tvých bocích',
+                d:
+                  '„Příkaz plout ke straně plavební dráhy, která je po levém ' +
+                  'boku“ nebo „přeplout na stranu, která je po pravém boku“ – ' +
+                  'tady se strana měří od tebe. Táž tabule proto pro protijedoucí ' +
+                  'loď znamená druhou stranu koryta.',
+              },
+            ],
+          },
+          {
+            kind: 'warn',
+            text:
+              'Jednoduchá kontrola u každé otázky: mluví se o boku plavidla ' +
+              '(levobok, pravobok, „po levém boku“), nebo o straně dráhy či ' +
+              'břehu (levá strana, pravý břeh)? První je od přídě, druhé po proudu.',
+          },
+        ],
+      },
+
+      /* --------------------------------------------------------------- 6 */
+      {
+        icon: '⚓',
+        title: 'Na moři je totéž popsané z druhé strany (kategorie C)',
+        blocks: [
+          {
+            kind: 'lead',
+            text:
+              'Laterální značení IALA nepoužívá proud, ale směr značení: z ' +
+              'moře do přístavu. Barvy a tvary jsou stejné jako na řece – ' +
+              'červená je válec, zelená kužel – jen se strana nepojmenovává, ' +
+              'nýbrž se rovnou říká, kterým bokem bóji minout. Proto se otázky ' +
+              'vždycky ptají „plujete z moře do přístavu“ nebo „z přístavu na ' +
+              'moře“: bez směru odpověď neexistuje.',
+          },
+          {
+            kind: 'facts',
+            items: [
+              { k: 'Z moře do přístavu', v: 'červená válcová po levoboku, zelená kuželová po pravoboku' },
+              { k: 'Z přístavu na moře', v: 'obráceně – červená po pravoboku, zelená po levoboku' },
+              { k: 'Vrcholový znak', v: 'kopíruje tvar bóje: červený válec, zelený kužel vrcholem vzhůru' },
+              { k: 'Hlavní dráha vpravo', v: 'červená válcová s jedním širokým zeleným pásem' },
+              { k: 'Hlavní dráha vlevo', v: 'zelená kuželová s jedním širokým červeným pásem' },
+            ],
+          },
+          {
+            kind: 'cards',
+            items: [
+              {
+                img: 'N03.jpg',
+                t: 'Červená válcová bóje',
+                d: 'Z moře do přístavu ji musíš minout na levoboku.',
+                tag: 'Do přístavu: červená vlevo',
+              },
+              {
+                img: 'N04.jpg',
+                t: 'Zelená kuželovitá bóje',
+                d: 'Z moře do přístavu ji musíš minout na pravoboku.',
+              },
+              {
+                img: 'N05.jpg',
+                t: 'Červená tyčová bóje s červeným válcem',
+                d: 'Z přístavu na moře ji mineš na pravoboku – táž bóje, opačný směr.',
+                tag: 'Na moře: všechno naopak',
+              },
+              {
+                img: 'N06.jpg',
+                t: 'Zelená tyčová bóje se zeleným kuželem',
+                d: 'Z přístavu na moře ji mineš na levoboku.',
+              },
+              {
+                img: 'N11.jpg',
+                t: 'Červená válcová se zeleným pásem',
+                d: 'Hlavní plavební dráha vede vpravo.',
+              },
+              {
+                img: 'N12.jpg',
+                t: 'Zelená kuželová s červeným pásem',
+                d: 'Hlavní plavební dráha vede vlevo.',
+              },
+            ],
+          },
+          {
+            kind: 'rules',
+            items: [
+              {
+                t: 'Řeka a moře si neodporují, jen se dívají z opačného konce',
+                d:
+                  'Směr značení na moři vede z moře do přístavu, tedy zhruba ' +
+                  'proti proudu. Bóje, kterou při vplouvání máš po levoboku, ' +
+                  'stojí u téhož břehu, který se z pohledu po proudu jmenuje ' +
+                  'pravý – a ten je červený i na řece. Mění se pojmenování, ' +
+                  'ne strana koryta.',
+              },
+              {
+                t: 'Bóji s pásem čti podle hlavní barvy',
+                d:
+                  'Chovej se k ní, jako by pás neexistoval, a jsi v hlavní ' +
+                  'dráze. Červenou válcovou tedy mineš po levoboku, čímž ti ' +
+                  'hlavní dráha zůstane vpravo. Pás v druhé barvě jenom říká, ' +
+                  'že na opačnou stranu odbočuje vedlejší dráha.',
+              },
+              {
+                t: 'Vrcholový znak nemá vlastní fantazii',
+                d:
+                  'Červená bóje nese válec, nikdy kouli ani kužel. Zelená ' +
+                  'nese kužel vrcholem vzhůru, nikdy válec ani kouli. Dvě ze ' +
+                  'tří nabízených odpovědí bývají právě tyhle nesmysly.',
+              },
+            ],
+          },
+          {
+            kind: 'warn',
+            text:
+              'Otázky pracují se systémem IALA v evropské podobě (region A). ' +
+              'V Americe a Japonsku jsou laterální barvy prohozené – u zkoušky ' +
+              'to nepotřebuješ, ale ať tě to nezaskočí v cizí příručce.',
+          },
+        ],
+      },
+
+      /* --------------------------------------------------------------- 7 */
+      {
+        icon: '🟡',
+        title: 'Znaky, které žádnou stranu neurčují',
+        blocks: [
+          {
+            kind: 'lead',
+            text:
+              'Ne každá bóje je o levé a pravé. Tyhle tři skupiny mluví o ' +
+              'vodě kolem sebe a vypadají stejně na řece i na moři – poznáš je ' +
+              'podle toho, že v nich červená a zelená vedle sebe nejsou.',
+          },
+          {
+            kind: 'cards',
+            items: [
+              {
+                img: '8e1.jpg',
+                t: 'Červenobílé svislé pruhy',
+                d:
+                  'Vyznačení bezpečných vod. Svislé pruhy proto, že bóje nemá ' +
+                  'strany – splavno je kolem dokola.',
+                tag: 'Svislé pruhy = bezpečná voda',
+              },
+              {
+                img: 'N15.jpg',
+                t: 'Táž bóje na moři',
+                d:
+                  'Červené a bílé svislé pruhy znamenají bezpečnou vodu i v ' +
+                  'systému IALA – kolem bóje je splavná voda.',
+              },
+              {
+                img: '8d.jpg',
+                t: 'Černá s červeným pruhem, dvě koule nad sebou',
+                d:
+                  'Označení na překážce, kterou lze bezpečně obeplout. Na ' +
+                  'moři je to izolované nebezpečí: černá s jedním nebo více ' +
+                  'širokými červenými pruhy.',
+                tag: 'Černočervená = stůj nad tím, obepluj to',
+              },
+              {
+                img: 'N27.jpg',
+                t: 'Celožlutá bóje',
+                d:
+                  'Zvláštní účel – pásmo vojenských cvičení, rekreační pásmo, ' +
+                  'uložené kabely nebo potrubí. Žlutá nikdy neznamená stranu ' +
+                  'dráhy.',
+              },
+              {
+                img: 'A1_1.jpg',
+                t: 'Žlutá bóje s vrcholovým znakem',
+                d:
+                  'Na vnitrozemské cestě označuje místo sestupu potápěčů – ' +
+                  'plavba blíž než 25 m od bóje je zakázána. Zase žlutá, zase ' +
+                  '„něco zvláštního“.',
+              },
+            ],
+          },
+        ],
+      },
+
+      /* --------------------------------------------------------------- 8 */
+      {
+        icon: '🧭',
+        title: 'Kardinální bóje: černá a žlutá místo červené a zelené (C)',
+        blocks: [
+          {
+            kind: 'lead',
+            text:
+              'Kardinální značení neřeší stranu dráhy, ale světovou stranu: ' +
+              'říká, kterým směrem od bóje je splavná voda. Proto má jiné ' +
+              'barvy – černou a žlutou – a nedá se splést s laterálním. Celá ' +
+              'skupina se dá odvodit z jednoho pravidla.',
+          },
+          {
+            kind: 'rules',
+            items: [
+              {
+                t: 'Černá je tam, kam ukazují kužely',
+                d:
+                  'Vrcholový znak jsou dva černé kužely a jejich špičky ' +
+                  'ukazují, kde na bóji leží černá barva. Když si zapamatuješ ' +
+                  'kužely, barvu těla už nemusíš – a naopak.',
+              },
+              {
+                t: 'Splavná voda je na té straně, kterou bóje pojmenovává',
+                d:
+                  'Severní kardinální bóje znamená „splavná voda je severně ' +
+                  'ode mě“, tedy sever obeplouvej severem. Žádné otáčení ' +
+                  'významu tu není.',
+              },
+            ],
+          },
+          {
+            kind: 'facts',
+            items: [
+              { k: 'Sever', v: 'oba kužely vzhůru; černá nahoře, žlutá dole' },
+              { k: 'Jih', v: 'oba kužely dolů; žlutá nahoře, černá dole' },
+              { k: 'Východ', v: 'kužely podstavami k sobě; černá s jedním žlutým pruhem' },
+              { k: 'Západ', v: 'kužely špičkami k sobě; žlutá s jedním černým pruhem' },
+            ],
+          },
+          {
+            kind: 'cards',
+            items: [
+              {
+                img: 'N17.jpg',
+                t: 'Oba kužely vzhůru',
+                d: 'Severní bóje – splavná voda severně od ní.',
+                tag: 'Špičky nahoru = černá nahoře',
+              },
+              {
+                img: 'N19.jpg',
+                t: 'Oba kužely dolů',
+                d: 'Jižní bóje – splavná voda jižně od ní.',
+                tag: 'Špičky dolů = černá dole',
+              },
+              {
+                img: 'N16.jpg',
+                t: 'Kužely podstavami k sobě',
+                d:
+                  'Východní bóje – splavná voda východně od ní. Špičky míří ' +
+                  'nahoru i dolů, a tak je černá nahoře i dole.',
+              },
+              {
+                img: 'N18.jpg',
+                t: 'Kužely špičkami k sobě',
+                d:
+                  'Západní bóje – splavná voda západně od ní. Špičky se ' +
+                  'potkávají uprostřed, takže černý je prostřední pruh. Tvar ' +
+                  'připomíná sklenku na víno, „W“ jako West.',
+              },
+            ],
+          },
+        ],
+      },
+
+      /* --------------------------------------------------------------- 9 */
+      {
+        icon: '🚦',
+        title: 'Červená a zelená v roli semaforu',
+        blocks: [
+          {
+            kind: 'lead',
+            text:
+              'Třetí úloha barev nemá se stranami nic společného: červená ' +
+              'zakazuje, zelená povoluje, obojí naráz znamená „za chvíli, ' +
+              'připrav se“. Platí to u plavebních komor, u mostních polí i u ' +
+              'znaků řady A a E.',
+          },
+          {
+            kind: 'cards',
+            items: [
+              {
+                img: 'A1a.jpg',
+                t: 'Červená – bílá – červená, vodorovně',
+                d: 'Zákaz proplutí. Táž zpráva existuje i jako světla nebo vlajky.',
+                tag: 'Zákaz leží',
+              },
+              {
+                img: 'E1A.jpg',
+                t: 'Zelená – bílá – zelená, svisle',
+                d: 'Povolení proplutí.',
+                tag: 'Povolení stojí',
+              },
+              {
+                img: 'A11A.jpg',
+                t: 'Červené a zelené světlo vedle sebe',
+                d:
+                  'Proplutí je zakázáno, ale je třeba připravit se k plavbě. ' +
+                  'Stejná dvojice u plavební komory znamená totéž: vplutí ' +
+                  'zatím ne, komora se chystá otevřít.',
+              },
+            ],
+          },
+          {
+            kind: 'facts',
+            items: [
+              { k: 'Dvě červená nad sebou', v: 'komora není v provozu' },
+              { k: 'Jedno nebo dvě červená vedle sebe', v: 'komora je zavřena' },
+              { k: 'Červené a zelené vedle sebe', v: 'připravuje se otevření komory' },
+              { k: 'Jedno nebo dvě zelená vedle sebe', v: 'vplutí je možné' },
+              { k: 'Červená při vyplouvání', v: 'vyplutí není možné' },
+              {
+                k: 'Mostní pole s červenými světly',
+                v: 'nebo červenými tabulemi s bílým pruhem – proplutí zakázáno',
+              },
+            ],
+          },
+          {
+            kind: 'warn',
+            text:
+              'Zelené světlo u komory nebo u mostu neznamená „levá strana ' +
+              'dráhy“ a červená bóje neznamená „stůj“. Podle čeho poznat, o ' +
+              'kterou úlohu jde: co je na břehu, na mostě nebo na komoře, je ' +
+              'semafor; co plave ve vodě a má tvar válce nebo kužele, je strana.',
+          },
+        ],
+      },
+
+      /* -------------------------------------------------------------- 10 */
+      {
+        icon: '🆘',
+        title: 'A ještě jednou červená: nouze a porucha',
+        blocks: [
+          {
+            kind: 'lead',
+            text:
+              'Poslední úloha červené je nejstarší: přitáhnout pozornost. ' +
+              'Zelená v ní nevystupuje nikdy, takže každá odpověď se zeleným ' +
+              'nouzovým signálem je špatně.',
+          },
+          {
+            kind: 'facts',
+            items: [
+              { k: 'Červený déšť ze světlic', v: 'nouze, opakuje se v krátkých intervalech' },
+              { k: 'Padáková světlice nebo pochodeň', v: 'červené světlo = nouze a potřeba pomoci' },
+              { k: 'Kývání červeným světlem v půlkruhu', v: 'ztráta manévrovací schopnosti (na malém plavidle smí být bílé)' },
+              { k: 'Kývání červenou vlajkou', v: 'totéž za dne' },
+              { k: 'Červený plamenec na přídi', v: 'oprávnění přednostního proplutí' },
+              { k: 'Oranžový dým', v: 'nouze – dým je oranžový, ne červený ani žlutý' },
+            ],
+          },
+          {
+            kind: 'rules',
+            items: [
+              {
+                t: 'Porucha není nouze',
+                d:
+                  'Kývání červeným světlem hlásí „nemůžu uhnout“. Světlice, ' +
+                  'kroužení a SOS znamenají „potřebuju pomoc“. Zkouška obojí ' +
+                  'nabízí vedle sebe.',
+              },
+              {
+                t: 'Zelená a nouze nejdou dohromady',
+                d:
+                  'Tři zelená světla, zelené pochodně ani zelené hvězdy nejsou ' +
+                  'nouzové signály. Vždycky je to nabídnutá past.',
+              },
+            ],
+          },
+        ],
+      },
+
+      /* -------------------------------------------------------------- 11 */
+      {
+        icon: '🧠',
+        title: 'Poslední kontrola před zkouškou',
+        blocks: [
+          {
+            kind: 'rules',
+            items: [
+              {
+                t: 'Bok, nebo strana?',
+                d:
+                  'Levobok a pravobok se počítají od přídě. Levá a pravá ' +
+                  'strana dráhy a levý a pravý břeh se počítají po proudu. ' +
+                  'Přečti si otázku ještě jednou a zjisti, o kterou dvojici jde.',
+              },
+              {
+                t: 'Červená válcová = pravá strana dráhy',
+                d:
+                  'Na řece se neptáme, kterým bokem ji minout – to záleží na ' +
+                  'tom, jestli plaveš po proudu, nebo proti němu.',
+              },
+              {
+                t: 'Na moři je bez směru otázka neúplná',
+                d:
+                  'Z moře do přístavu: červená po levoboku. Z přístavu na ' +
+                  'moře: červená po pravoboku. Zadání ten směr vždycky ' +
+                  'obsahuje, takže ho hledej dřív než barvu.',
+              },
+              {
+                t: 'Válec je červený, kužel zelený – všude',
+                d:
+                  'Na vnitrozemské cestě i na moři, u bóje i u vrcholového ' +
+                  'znaku. Zelený válec ani červený kužel neexistují.',
+              },
+              {
+                t: 'Žlutočerná je přechod nebo světová strana',
+                d:
+                  'Na řece žlutočerný přechodový znak (čtverec pravý břeh, ' +
+                  'kosočtverec levý), na moři kardinální bóje. Nikdy strana ' +
+                  'plavební dráhy.',
+              },
+              {
+                t: 'Svislé červenobílé pruhy = bezpečná voda',
+                d:
+                  'Vodorovné červenozelené pruhy naproti tomu znamenají ' +
+                  'rozdělení plavební dráhy. Pruhy jsou stejné, směr pruhů ne.',
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
 ]
 
 
 export const getCheatsheet = (id) => CHEATSHEETS.find((s) => s.id === id)
+
