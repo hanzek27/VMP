@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import QuestionView, { imgUrl } from './QuestionView'
+import Icon from './Icon'
 import { getCategory } from '../categories'
 import { formatDuration, isScored, plural } from '../lib/exam'
 import { useBackGuard } from '../lib/backGuard'
@@ -121,10 +122,37 @@ export default function Exam({ session, settings, onChange, onFinish, onQuit }) 
     [patch]
   )
 
+  // scroll back to the top when the question changes
+  const scroller = useRef(null)
+
+  /* ↑/↓ move a cursor over the options. It is *real DOM focus*, not a piece of
+   * state: the browser then draws the focus ring, announces the option to a
+   * screen reader, and — because the options are real buttons — Enter and Space
+   * activate the focused one with no key handling of ours at all. */
+  const moveCursor = useCallback((delta) => {
+    const list = [...(scroller.current?.querySelectorAll('.answer:not(:disabled)') ?? [])]
+    if (!list.length) return
+    const at = list.indexOf(document.activeElement)
+    const next =
+      at === -1 ? (delta > 0 ? 0 : list.length - 1) : (at + delta + list.length) % list.length
+    list[next].focus()
+  }, [])
+
   useEffect(() => {
     const onKey = (e) => {
       if (e.target.closest?.('input, textarea')) return
-      if (e.key === 'ArrowRight') go(1)
+      // a sheet or a dialog owns the keyboard while it is open
+      if (navOpen || confirm) {
+        if (e.key === 'Escape') setNavOpen(false)
+        return
+      }
+      if (e.key === 'ArrowDown') {
+        e.preventDefault() // otherwise the page scrolls under the cursor
+        moveCursor(1)
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault()
+        moveCursor(-1)
+      } else if (e.key === 'ArrowRight') go(1)
       else if (e.key === 'ArrowLeft') go(-1)
       else if (['1', '2', '3'].includes(e.key)) {
         const i = Number(e.key) - 1
@@ -134,10 +162,9 @@ export default function Exam({ session, settings, onChange, onFinish, onQuit }) 
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [go, choose, toggleFlag, item, locked])
+  }, [go, choose, toggleFlag, moveCursor, item, locked, navOpen, confirm])
 
-  // scroll back to the top when the question changes
-  const scroller = useRef(null)
+  // back to the top when the question changes
   useEffect(() => {
     scroller.current?.scrollTo({ top: 0 })
   }, [current])
@@ -147,6 +174,12 @@ export default function Exam({ session, settings, onChange, onFinish, onQuit }) 
   useEffect(() => {
     if (navOpen) currentRow.current?.scrollIntoView({ block: 'center' })
   }, [navOpen])
+
+  // the sidebar is always open, so it follows along instead
+  const sideRow = useRef(null)
+  useEffect(() => {
+    sideRow.current?.scrollIntoView({ block: 'nearest' })
+  }, [current])
 
   const lowTime = timeLeft !== null && timeLeft < 60_000
   const progress = useMemo(
@@ -158,19 +191,38 @@ export default function Exam({ session, settings, onChange, onFinish, onQuit }) 
 
   return (
     <div className="page page--exam">
-      <header className="examhead">
-        <button className="btn btn--ghost btn--icon" onClick={() => setConfirm('quit')} title="Ukončit">
-          <span aria-hidden="true">✕</span>
+      <header className="runhead">
+        <button
+          className="iconbtn iconbtn--onhead"
+          onClick={() => setConfirm('quit')}
+          aria-label="Ukončit"
+          title="Ukončit"
+        >
+          <Icon name="close" />
         </button>
 
-        <div className="examhead__mid">
-          <span className="examhead__cat">
-            {cat.name} {!scored && <em>· {modeLabel}</em>}
+        <div className="runhead__mid">
+          <span className="runhead__count">
+            <strong>{current + 1}</strong>
+            <em>/{total}</em>
           </span>
-          <span className="examhead__count">
-            {current + 1} / {total}
+          <span className="runhead__where">
+            {cat.id} · {scored ? 'zkouška' : modeLabel}
           </span>
         </div>
+
+        {/* flagging is only meaningful in a scored run, where you come back to it */}
+        {scored && (
+          <button
+            className={`iconbtn iconbtn--onhead ${session.flags[current] ? 'is-flagged' : ''}`}
+            onClick={toggleFlag}
+            aria-pressed={session.flags[current] ? 'true' : 'false'}
+            aria-label={session.flags[current] ? 'Označeno k revizi' : 'Označit k revizi'}
+            title={session.flags[current] ? 'Označeno k revizi' : 'Označit k revizi'}
+          >
+            <Icon name="flag" />
+          </button>
+        )}
 
         {session.deadline ? (
           <span className={`timer ${lowTime ? 'is-low' : ''}`}>
@@ -178,119 +230,121 @@ export default function Exam({ session, settings, onChange, onFinish, onQuit }) 
           </span>
         ) : (
           <span className="timer timer--off" title="Časový limit je vypnutý">
-            ∞
+            <Icon name="clock" size={18} />
           </span>
         )}
       </header>
 
-      <div className="progressbar">
-        <div className="progressbar__fill" style={{ width: `${progress}%` }} />
+      <div className="runbar">
+        <div className="runbar__fill" style={{ width: `${progress}%` }} />
       </div>
 
-      <main className="container container--narrow exambody" ref={scroller}>
-        <QuestionView
-          item={item}
-          categoryId={session.categoryId}
-          chosen={chosen}
-          onChoose={choose}
-          reveal={reveal}
-          locked={locked}
-        />
+      {/* Wide screens get the question list as a permanent sidebar instead of
+          a sheet you have to open. Both wrappers are `display: contents` on a
+          phone, so the layout below 1024 px is exactly the flex column it was. */}
+      <div className="exammain">
+        <aside className="runside" aria-label="Přehled otázek">
+          <QuestionList
+            session={session}
+            current={current}
+            scored={scored}
+            rowRef={sideRow}
+            className="runside__list"
+            onPick={setCurrent}
+          />
+          <div className="runside__foot">
+            <button className="btn btn--soft btn--wide" onClick={() => setConfirm('finish')}>
+              {scored ? 'Vyhodnotit test' : `Dokončit ${finishNoun}`}
+            </button>
+          </div>
+        </aside>
 
-        {scored && (
-          <button
-            className={`btn btn--flag ${session.flags[current] ? 'is-on' : ''}`}
-            onClick={toggleFlag}
-          >
-            <span aria-hidden="true">⚑</span>{' '}
-            {session.flags[current] ? 'Označeno k revizi' : 'Označit k revizi'}
-          </button>
-        )}
-      </main>
+        <div className="runcol">
+          <main className="container container--narrow exambody" ref={scroller}>
+            <QuestionView
+              item={item}
+              categoryId={session.categoryId}
+              chosen={chosen}
+              onChoose={choose}
+              reveal={reveal}
+              locked={locked}
+            />
 
-      <nav className="examnav">
-        <button className="btn btn--soft" onClick={() => go(-1)} disabled={current === 0}>
-          ← Zpět
+            {/* keyboard is a desktop-only affordance; the handlers are always on */}
+            <p className="keyhints">
+              <kbd>↑</kbd>
+              <kbd>↓</kbd> výběr
+              <span>·</span>
+              <kbd>Enter</kbd> potvrdit
+              <span>·</span>
+              <kbd>1</kbd>–<kbd>3</kbd> přímo
+              <span>·</span>
+              <kbd>←</kbd>
+              <kbd>→</kbd> otázka
+              {scored && (
+                <>
+                  <span>·</span>
+                  <kbd>F</kbd> označit
+                </>
+              )}
+            </p>
+          </main>
+
+          <nav className="runnav">
+        <button
+          className="iconbtn iconbtn--nav"
+          onClick={() => go(-1)}
+          disabled={current === 0}
+          aria-label="Předchozí otázka"
+        >
+          <Icon name="back" />
         </button>
-        <button className="btn btn--ghost" onClick={() => setNavOpen(true)}>
-          Přehled{scored && ` (${answeredCount}/${total})`}
+        <button className="btn btn--soft runnav__list" onClick={() => setNavOpen(true)}>
+          Přehled{scored && ` · ${answeredCount}/${total}`}
         </button>
         {current === total - 1 ? (
-          <button className="btn btn--primary" onClick={() => setConfirm('finish')}>
+          <button className="btn btn--go btn--go--sm" onClick={() => setConfirm('finish')}>
             {scored ? 'Vyhodnotit' : 'Dokončit'}
           </button>
         ) : (
-          <button className="btn btn--primary" onClick={() => go(1)}>
-            Další →
+          <button className="btn btn--go btn--go--sm" onClick={() => go(1)}>
+            Další
+            <Icon name="chevron" size={18} />
           </button>
         )}
-      </nav>
+          </nav>
+        </div>
+      </div>
 
       {navOpen && (
-        <div className="sheet" onClick={() => setNavOpen(false)}>
-          <div
-            className="sheet__panel sheet__panel--wide sheet__panel--full"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="sheet__head">
+        <div className="scrim" onClick={() => setNavOpen(false)}>
+          <div className="panel panel--wide" onClick={(e) => e.stopPropagation()}>
+            <div className="panel__head">
               <div>
                 <h2>Přehled otázek</h2>
-                <p className="sheet__sub">
+                <p className="panel__sub">
                   {scored
                     ? `zodpovězeno ${answeredCount} z ${total}`
                     : `${total} ${plural(total, 'otázka', 'otázky', 'otázek')}`}
                 </p>
               </div>
-              <button
-                className="btn btn--ghost btn--icon"
-                onClick={() => setNavOpen(false)}
-                aria-label="Zavřít"
-              >
-                <span aria-hidden="true">✕</span>
+              <button className="iconbtn" onClick={() => setNavOpen(false)} aria-label="Zavřít">
+                <Icon name="close" />
               </button>
             </div>
-            <ul className="qlist sheet__scroll">
-              {session.items.map((it, i) => {
-                const a = session.answers[i]
-                const cls = [
-                  'qlist__item',
-                  i === current && 'is-current',
-                  a !== null &&
-                    (scored ? 'is-answered' : a === it.correctIdx ? 'is-ok' : 'is-bad'),
-                  session.flags[i] && 'is-flagged',
-                ]
-                  .filter(Boolean)
-                  .join(' ')
-                return (
-                  <li key={i}>
-                    <button
-                      ref={i === current ? currentRow : null}
-                      className={cls}
-                      aria-current={i === current ? 'true' : undefined}
-                      onClick={() => {
-                        setCurrent(i)
-                        setNavOpen(false)
-                      }}
-                    >
-                      <span className="qlist__num">{i + 1}</span>
-                      {/* many sign questions share identical wording – the
-                          thumbnail is what actually tells them apart */}
-                      {it.q.img?.length ? (
-                        <img className="qlist__thumb" src={imgUrl(it.q.img[0])} alt="" loading="lazy" />
-                      ) : null}
-                      <span className="qlist__text">{it.q.t}</span>
-                      {session.flags[i] && (
-                        <span className="qlist__flag" aria-label="označeno k revizi">
-                          ⚑
-                        </span>
-                      )}
-                    </button>
-                  </li>
-                )
-              })}
-            </ul>
-            <div className="sheet__foot">
-              <button className="btn btn--primary btn--wide" onClick={() => setConfirm('finish')}>
+            <QuestionList
+              session={session}
+              current={current}
+              scored={scored}
+              rowRef={currentRow}
+              className="panel__scroll"
+              onPick={(i) => {
+                setCurrent(i)
+                setNavOpen(false)
+              }}
+            />
+            <div className="panel__foot">
+              <button className="btn btn--go btn--wide" onClick={() => setConfirm('finish')}>
                 {scored ? 'Vyhodnotit test' : `Dokončit ${finishNoun}`}
               </button>
             </div>
@@ -299,7 +353,7 @@ export default function Exam({ session, settings, onChange, onFinish, onQuit }) 
       )}
 
       {confirm && (
-        <div className="sheet sheet--center" onClick={() => setConfirm(null)}>
+        <div className="scrim scrim--center" onClick={() => setConfirm(null)}>
           <div className="dialog" onClick={(e) => e.stopPropagation()}>
             {confirm === 'quit' ? (
               <>
@@ -316,7 +370,7 @@ export default function Exam({ session, settings, onChange, onFinish, onQuit }) 
                     Pokračovat
                   </button>
                   <button
-                    className={`btn ${scored ? 'btn--danger' : 'btn--primary'}`}
+                    className={`btn ${scored ? 'btn--danger' : 'btn--go'}`}
                     onClick={onQuit}
                   >
                     {scored || !saved ? 'Ukončit' : 'Uložit a ukončit'}
@@ -337,7 +391,7 @@ export default function Exam({ session, settings, onChange, onFinish, onQuit }) 
                   <button className="btn btn--soft" onClick={() => setConfirm(null)}>
                     Zpět
                   </button>
-                  <button className="btn btn--primary" onClick={finishNow}>
+                  <button className="btn btn--go" onClick={finishNow}>
                     {scored ? 'Odevzdat' : 'Dokončit'}
                   </button>
                 </div>
@@ -347,5 +401,48 @@ export default function Exam({ session, settings, onChange, onFinish, onQuit }) 
         </div>
       )}
     </div>
+  )
+}
+
+/**
+ * The question list. The overview sheet and the desktop sidebar render the same
+ * rows; only the wrapper class and which ref marks the current row differ.
+ */
+function QuestionList({ session, current, scored, onPick, rowRef, className = '' }) {
+  return (
+    <ul className={`qlist ${className}`}>
+      {session.items.map((it, i) => {
+        const a = session.answers[i]
+        const cls = [
+          'qlist__item',
+          i === current && 'is-current',
+          a !== null && (scored ? 'is-answered' : a === it.correctIdx ? 'is-ok' : 'is-bad'),
+          session.flags[i] && 'is-flagged',
+        ]
+          .filter(Boolean)
+          .join(' ')
+        return (
+          <li key={i}>
+            <button
+              ref={i === current ? rowRef : null}
+              className={cls}
+              aria-current={i === current ? 'true' : undefined}
+              onClick={() => onPick(i)}
+            >
+              <span className="qlist__num">{i + 1}</span>
+              {/* many sign questions share identical wording – the thumbnail is
+                  what actually tells them apart */}
+              {it.q.img?.length ? (
+                <img className="qlist__thumb" src={imgUrl(it.q.img[0])} alt="" loading="lazy" />
+              ) : null}
+              <span className="qlist__text">{it.q.t}</span>
+              {session.flags[i] && (
+                <Icon name="flag" size={16} className="qlist__flag" title="označeno k revizi" />
+              )}
+            </button>
+          </li>
+        )
+      })}
+    </ul>
   )
 }

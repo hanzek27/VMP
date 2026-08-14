@@ -12,7 +12,7 @@ export default function ResumeDialog({ run, label, onResume, onRestart, onCancel
   useBackGuard(true, onCancel)
 
   return (
-    <div className="sheet sheet--center" onClick={onCancel}>
+    <div className="scrim scrim--center" onClick={onCancel}>
       <div className="dialog" onClick={(e) => e.stopPropagation()}>
         <h2>Pokračovat, nebo začít znovu?</h2>
         <p>
@@ -22,7 +22,7 @@ export default function ResumeDialog({ run, label, onResume, onRestart, onCancel
           <button className="btn btn--soft" onClick={onRestart}>
             Začít znovu
           </button>
-          <button className="btn btn--primary" onClick={onResume}>
+          <button className="btn btn--go" onClick={onResume}>
             Pokračovat
           </button>
         </div>

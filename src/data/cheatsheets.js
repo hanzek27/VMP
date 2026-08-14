@@ -27,7 +27,7 @@ export const CHEATSHEETS = [
     id: 'svetla-m',
     categoryId: 'M',
     topic: 'svetla-plavidel',
-    icon: '🚦',
+    icon: 'light',
     title: 'Světla a znaky plavidel',
     subtitle: 'M a M20 · 82 otázek okruhu',
     lead:
@@ -39,7 +39,7 @@ export const CHEATSHEETS = [
     sections: [
       /* ------------------------------------------------------------- 1 */
       {
-        icon: '🧭',
+        icon: 'compass',
         title: 'Čtyři světla, ze kterých se skládá skoro všechno',
         blocks: [
           {
@@ -109,7 +109,7 @@ export const CHEATSHEETS = [
 
       /* ------------------------------------------------------------- 2 */
       {
-        icon: '🎚',
+        icon: 'stack',
         title: 'Svislý sloupec světel = stavová hláška',
         blocks: [
           {
@@ -208,7 +208,7 @@ export const CHEATSHEETS = [
 
       /* ------------------------------------------------------------- 3 */
       {
-        icon: '🚢',
+        icon: 'ship',
         title: 'Kolik bílých na stěžni, tolik problémů za zádí',
         blocks: [
           {
@@ -289,7 +289,7 @@ export const CHEATSHEETS = [
 
       /* ------------------------------------------------------------- 4 */
       {
-        icon: '📏',
+        icon: 'ruler',
         title: 'Malé plavidlo: všechno se točí kolem sedmi metrů',
         blocks: [
           {
@@ -390,7 +390,7 @@ export const CHEATSHEETS = [
 
       /* ------------------------------------------------------------- 5 */
       {
-        icon: '🎨',
+        icon: 'palette',
         title: 'Barvy nejsou dekorace',
         blocks: [
           {
@@ -467,7 +467,7 @@ export const CHEATSHEETS = [
 
       /* ------------------------------------------------------------- 6 */
       {
-        icon: '🆘',
+        icon: 'sos',
         title: 'Když se něco děje: kývání a kroužení',
         blocks: [
           {
@@ -520,7 +520,7 @@ export const CHEATSHEETS = [
 
       /* ------------------------------------------------------------- 7 */
       {
-        icon: '📐',
+        icon: 'distance',
         title: 'Odstupy, které se prostě musí umět',
         blocks: [
           {
@@ -561,7 +561,7 @@ export const CHEATSHEETS = [
 
       /* ------------------------------------------------------------- 8 */
       {
-        icon: '🗂',
+        icon: 'folder',
         title: 'Zbytek, který se musí nabiflovat',
         blocks: [
           {
@@ -639,7 +639,7 @@ export const CHEATSHEETS = [
 
       /* ------------------------------------------------------------- 9 */
       {
-        icon: '🧠',
+        icon: 'checklist',
         title: 'Poslední kontrola před zkouškou',
         blocks: [
           {
@@ -680,7 +680,7 @@ export const CHEATSHEETS = [
     id: 'zvuky-m',
     categoryId: 'M',
     topic: 'zvukove-signaly',
-    icon: '🔊',
+    icon: 'horn',
     title: 'Zvukové signály',
     subtitle: 'M a M20 · 22 otázek okruhu',
     lead:
@@ -692,7 +692,7 @@ export const CHEATSHEETS = [
     sections: [
       /* --------------------------------------------------------------- 1 */
       {
-        icon: '⏱',
+        icon: 'clock',
         title: 'Dva dílky, ze kterých se skládá všechno',
         blocks: [
           {
@@ -737,7 +737,7 @@ export const CHEATSHEETS = [
 
       /* --------------------------------------------------------------- 2 */
       {
-        icon: '🔢',
+        icon: 'bars',
         title: 'Krátké zvuky se počítají: čím víc, tím méně ovládám',
         blocks: [
           {
@@ -798,7 +798,7 @@ export const CHEATSHEETS = [
 
       /* --------------------------------------------------------------- 3 */
       {
-        icon: '🧩',
+        icon: 'link',
         title: 'Signál je věta: hlava říká co, ocas kam',
         blocks: [
           {
@@ -870,7 +870,7 @@ export const CHEATSHEETS = [
 
       /* --------------------------------------------------------------- 4 */
       {
-        icon: '📣',
+        icon: 'horn',
         title: '„Jeden dlouhý“ je univerzální pozor',
         blocks: [
           {
@@ -907,7 +907,7 @@ export const CHEATSHEETS = [
 
       /* --------------------------------------------------------------- 5 */
       {
-        icon: '🌫',
+        icon: 'fog',
         title: 'Mlha: co se opakuje každou minutu',
         blocks: [
           {
@@ -989,7 +989,7 @@ export const CHEATSHEETS = [
 
       /* --------------------------------------------------------------- 6 */
       {
-        icon: '🆘',
+        icon: 'sos',
         title: 'Nouze a kolize: „řada“ bez počtu',
         blocks: [
           {
@@ -1054,7 +1054,7 @@ export const CHEATSHEETS = [
 
       /* --------------------------------------------------------------- 7 */
       {
-        icon: '🧠',
+        icon: 'checklist',
         title: 'Poslední kontrola před zkouškou',
         blocks: [
           {
@@ -1106,7 +1106,7 @@ export const CHEATSHEETS = [
     id: 'barvy-m',
     categoryId: 'M',
     topic: 'znaky-vodni-cesty',
-    icon: '🔴',
+    icon: 'buoy',
     title: 'Barvy, strany a břehy',
     subtitle: 'M a M20 · 106 otázek okruhu',
     lead:
@@ -1119,7 +1119,7 @@ export const CHEATSHEETS = [
     sections: [
       /* --------------------------------------------------------------- 1 */
       {
-        icon: '🚥',
+        icon: 'stack',
         title: 'Jedna dvojice barev, čtyři různé úlohy',
         blocks: [
           {
@@ -1164,7 +1164,7 @@ export const CHEATSHEETS = [
 
       /* --------------------------------------------------------------- 2 */
       {
-        icon: '🚢',
+        icon: 'ship',
         title: 'Na plavidle: červená vlevo, zelená vpravo',
         blocks: [
           {
@@ -1233,7 +1233,7 @@ export const CHEATSHEETS = [
 
       /* --------------------------------------------------------------- 3 */
       {
-        icon: '🌊',
+        icon: 'waves',
         title: 'Na vodní cestě: strany se počítají po proudu',
         blocks: [
           {
@@ -1316,7 +1316,7 @@ export const CHEATSHEETS = [
 
       /* --------------------------------------------------------------- 4 */
       {
-        icon: '🪧',
+        icon: 'sign',
         title: 'Tytéž strany na břehu, jen v jiném tvaru',
         blocks: [
           {
@@ -1401,7 +1401,7 @@ export const CHEATSHEETS = [
 
       /* --------------------------------------------------------------- 5 */
       {
-        icon: '🔁',
+        icon: 'crossing',
         title: 'Proč to nesedí s tvými vlastními světly',
         blocks: [
           {
@@ -1456,7 +1456,7 @@ export const CHEATSHEETS = [
 
       /* --------------------------------------------------------------- 6 */
       {
-        icon: '⚓',
+        icon: 'anchor',
         title: 'Na moři je totéž popsané z druhé strany (kategorie C)',
         blocks: [
           {
@@ -1557,7 +1557,7 @@ export const CHEATSHEETS = [
 
       /* --------------------------------------------------------------- 7 */
       {
-        icon: '🟡',
+        icon: 'cardinal',
         title: 'Znaky, které žádnou stranu neurčují',
         blocks: [
           {
@@ -1617,7 +1617,7 @@ export const CHEATSHEETS = [
 
       /* --------------------------------------------------------------- 8 */
       {
-        icon: '🧭',
+        icon: 'compass',
         title: 'Kardinální bóje: černá a žlutá místo červené a zelené (C)',
         blocks: [
           {
@@ -1693,7 +1693,7 @@ export const CHEATSHEETS = [
 
       /* --------------------------------------------------------------- 9 */
       {
-        icon: '🚦',
+        icon: 'light',
         title: 'Červená a zelená v roli semaforu',
         blocks: [
           {
@@ -1756,7 +1756,7 @@ export const CHEATSHEETS = [
 
       /* -------------------------------------------------------------- 10 */
       {
-        icon: '🆘',
+        icon: 'sos',
         title: 'A ještě jednou červená: nouze a porucha',
         blocks: [
           {
@@ -1800,7 +1800,7 @@ export const CHEATSHEETS = [
 
       /* -------------------------------------------------------------- 11 */
       {
-        icon: '🧠',
+        icon: 'checklist',
         title: 'Poslední kontrola před zkouškou',
         blocks: [
           {

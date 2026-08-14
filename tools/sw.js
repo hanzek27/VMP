@@ -51,9 +51,14 @@ self.addEventListener('activate', (event) => {
   )
 })
 
+/* `ignoreVary` matters: a host that answers with `Vary: Origin` (vite preview
+ * does, and some CDNs do) stores an entry that a later page request — which
+ * carries an Origin header — will not match, and the app is offline-broken with
+ * a full cache. Everything here is same-origin static output; there is nothing
+ * for the response to legitimately vary on. */
 async function cacheFirst(cacheName, request) {
   const cache = await caches.open(cacheName)
-  const hit = await cache.match(request)
+  const hit = await cache.match(request, { ignoreVary: true })
   if (hit) return hit
   try {
     const res = await fetch(request)
@@ -75,7 +80,7 @@ self.addEventListener('fetch', (event) => {
   // one page, one entry point – any navigation resolves to the cached shell
   if (request.mode === 'navigate') {
     event.respondWith(
-      caches.match(INDEX).then((hit) => hit || fetch(request))
+      caches.match(INDEX, { ignoreVary: true }).then((hit) => hit || fetch(request))
     )
     return
   }

@@ -1,25 +1,52 @@
 import { useMemo, useState } from 'react'
 import QuestionView from './QuestionView'
+import Icon from './Icon'
 import { getCategory, groupLabel } from '../categories'
 import { formatDuration, isScored, plural, scoreByGroup, scoreSession } from '../lib/exam'
 import { useBackGuard } from '../lib/backGuard'
 import { topicLabel } from '../topics'
 
-function Ring({ percent, passed }) {
-  const r = 52
-  const c = 2 * Math.PI * r
+/**
+ * The score as a graduated dial rather than a donut: ticks every 10 %, a needle
+ * at the score, and the pass mark drawn as its own line on the scale — the one
+ * number that decides the whole thing should be visible *on* the instrument.
+ */
+function Dial({ percent, passPercent, passed }) {
+  const cx = 100
+  const cy = 96
+  const r = 76
+  const at = (v, rr) => {
+    const a = ((180 + v * 1.8) * Math.PI) / 180
+    return [cx + rr * Math.cos(a), cy + rr * Math.sin(a)]
+  }
+  const arc = (from, to, rr) => {
+    const [x0, y0] = at(from, rr)
+    const [x1, y1] = at(to, rr)
+    return `M${x0.toFixed(1)},${y0.toFixed(1)} A${rr},${rr} 0 0 1 ${x1.toFixed(1)},${y1.toFixed(1)}`
+  }
+  const ticks = Array.from({ length: 11 }, (_, i) => i * 10)
+  const [nx, ny] = at(percent, r - 20)
+  const [mx0, my0] = at(passPercent, r - 13)
+  const [mx1, my1] = at(passPercent, r + 5)
+
   return (
-    <svg className="ring" viewBox="0 0 120 120" role="img" aria-label={`${percent} %`}>
-      <circle className="ring__track" cx="60" cy="60" r={r} />
-      <circle
-        className={`ring__value ${passed ? 'is-pass' : 'is-fail'}`}
-        cx="60"
-        cy="60"
-        r={r}
-        strokeDasharray={c}
-        strokeDashoffset={c - (c * percent) / 100}
+    <svg className="dial" viewBox="0 0 200 130" role="img" aria-label={`${percent} %`}>
+      <path className="dial__track" d={arc(0, 100, r)} />
+      <path
+        className={`dial__value ${passed ? 'is-pass' : 'is-fail'}`}
+        d={arc(0, Math.max(percent, 0.4), r)}
       />
-      <text className="ring__label" x="60" y="66">
+      {ticks.map((v) => {
+        const long = v % 50 === 0
+        const [x0, y0] = at(v, r - (long ? 13 : 8))
+        const [x1, y1] = at(v, r - 2)
+        return <line key={v} className="dial__tick" x1={x0} y1={y0} x2={x1} y2={y1} />
+      })}
+      <line className="dial__mark" x1={mx0} y1={my0} x2={mx1} y2={my1} />
+      <line className="dial__needle" x1={cx} y1={cy} x2={nx} y2={ny} />
+      <circle className="dial__hub" cx={cx} cy={cy} r="5" />
+      {/* below the hub: at some angles the needle runs straight through the middle */}
+      <text className="dial__pct" x={cx} y={cy + 26}>
         {percent} %
       </text>
     </svg>
@@ -83,17 +110,23 @@ export default function Result({
             </>
           ) : (
             <>
-              <p className="resulthead__eyebrow">{cat.name}</p>
-              <div className="resulthead__score">
-                <Ring percent={score.percent} passed={score.passed} />
-                <div>
-                  <h1>{score.passed ? 'Prospěl/a' : 'Neprospěl/a'}</h1>
-                  <p className="resulthead__big">
-                    {score.correct} / {score.total} bodů
+              <p className="resulthead__eyebrow">{cat.name} · výsledek</p>
+              <div className="verdict">
+                <Dial
+                  percent={score.percent}
+                  passPercent={Math.round((score.passMark / score.total) * 100)}
+                  passed={score.passed}
+                />
+                <div className="verdict__text">
+                  <span className={`stamp ${score.passed ? 'is-pass' : 'is-fail'}`}>
+                    {score.passed ? 'Prospěl/a' : 'Neprospěl/a'}
+                  </span>
+                  <p className="verdict__score">
+                    <strong>{score.correct}</strong>
+                    <em>/{score.total} bodů</em>
                   </p>
-                  <p className="resulthead__lead">
-                    K úspěchu je potřeba {score.passMark} bodů · čas{' '}
-                    {formatDuration(score.elapsedMs)}
+                  <p className="verdict__meta">
+                    potřeba {score.passMark} · čas {formatDuration(score.elapsedMs)}
                     {session.expired && ' · vypršel limit'}
                     {score.unanswered > 0 && ` · bez odpovědi ${score.unanswered}`}
                   </p>
@@ -129,7 +162,7 @@ export default function Result({
 
         <div className="resultactions">
           <button
-            className="btn btn--primary"
+            className="btn btn--go"
             onClick={onRetry}
             disabled={mistakes && missedCount === 0}
           >
@@ -140,7 +173,7 @@ export default function Result({
           </button>
           {!mistakes && missedCount > 0 && (
             <button className="btn btn--soft btn--span" onClick={onPracticeMistakes}>
-              <span aria-hidden="true">✕</span> Procvičit chyby ({missedCount})
+              <Icon name="mistakes" size={18} /> Procvičit chyby ({missedCount})
             </button>
           )}
         </div>
@@ -159,7 +192,9 @@ export default function Result({
           </div>
 
           {rows.length === 0 ? (
-            <p className="review__empty">Žádné chyby – všechno správně. 🎉</p>
+            <p className="review__empty">
+              <Icon name="check" size={20} /> Žádné chyby – všechno správně.
+            </p>
           ) : (
             <ol className="review__list">
               {rows.map(({ item, i, chosen }) => (

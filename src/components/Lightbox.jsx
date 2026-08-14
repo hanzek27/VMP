@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { imgUrl } from './QuestionView'
 import { useBackGuard } from '../lib/backGuard'
+import Icon from './Icon'
 
 /**
  * Tap-to-enlarge for the signal drawings. The source images are small (250×199
@@ -23,16 +24,12 @@ export default function Lightbox({ img, caption, onClose }) {
   }, [onClose])
 
   return (
-    <div className="sheet sheet--center lightbox" onClick={onClose}>
+    <div className="scrim scrim--center lightbox" onClick={onClose}>
       <div className="lightbox__panel" onClick={(e) => e.stopPropagation()}>
         <img className="lightbox__img" src={imgUrl(img)} alt={caption || ''} />
         {caption && <p className="lightbox__caption">{caption}</p>}
-        <button
-          className="lightbox__close"
-          onClick={onClose}
-          aria-label="Zavřít"
-        >
-          <span aria-hidden="true">✕</span>
+        <button className="lightbox__close" onClick={onClose} aria-label="Zavřít">
+          <Icon name="close" size={20} />
         </button>
       </div>
     </div>
@@ -53,9 +50,7 @@ export function ZoomImage({ img, caption, onZoom }) {
       aria-label="Zvětšit obrázek"
     >
       <img src={imgUrl(img)} alt="" loading="lazy" />
-      <span className="zoom__hint" aria-hidden="true">
-        ⤢
-      </span>
+      <Icon name="zoom" size={14} className="zoom__hint" />
     </button>
   )
 }
