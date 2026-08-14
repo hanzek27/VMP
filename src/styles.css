@@ -114,8 +114,17 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* The water under everything: a slow gradient plus a faint chart graticule.
-   One fixed layer, not `background-attachment: fixed` on the body — that
+/* The water under everything: a chart of the Caribbean and the Antilles
+   (`assets/chart.webp`) — soundings, rhumb lines, coastlines and a compass
+   rose, already toned to the app's own navy, which is why it needs no
+   correction: its paper reads #08121a against the page's #06101a.
+
+   The gradient over it is the only knob. It pulls the chart down to the page's
+   value and adds the teal wash at the top; tune that, not the image. If you can
+   read the island names without looking for them, it is too strong.
+
+   Cropped by `cover`, never tiled — the crop is not seamless and a repeat would
+   show. One fixed layer, not `background-attachment: fixed` on the body: that
    repaints the texture on every scroll frame and a phone feels it. */
 body::before {
   content: '';
@@ -123,11 +132,14 @@ body::before {
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  background:
-    repeating-linear-gradient(0deg, rgba(224, 139, 42, 0.035) 0 1px, transparent 1px 72px),
-    repeating-linear-gradient(90deg, rgba(224, 139, 42, 0.035) 0 1px, transparent 1px 72px),
+  background-color: var(--bg);
+  background-image:
     radial-gradient(110% 60% at 50% -8%, rgba(69, 170, 161, 0.1), transparent 60%),
-    linear-gradient(180deg, var(--bg) 0%, var(--void) 100%);
+    linear-gradient(180deg, rgba(6, 16, 26, 0.18) 0%, rgba(3, 8, 14, 0.6) 100%),
+    url('./assets/chart.webp');
+  background-position: center, center, center;
+  background-size: cover, cover, cover;
+  background-repeat: no-repeat;
 }
 
 h1,

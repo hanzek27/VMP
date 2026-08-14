@@ -492,9 +492,27 @@ amber-brass fittings, warm paper ink.
   relative to the emitted CSS, which is what `base: './'` needs. A `public/`
   path would have to be absolute and would break the relative-base build.
 - They are part of the shell precache, so the app renders the same offline.
-- **`body::before` carries the page texture** — graticule and water wash — as one
-  fixed layer at `z-index: -1`. Deliberately *not* `background-attachment: fixed`
-  on the body: that repaints on every scroll frame and a phone feels it.
+- **`body::before` carries the page texture** as one fixed layer at
+  `z-index: -1`: a chart of the Caribbean and the Antilles
+  (`assets/chart.webp`) under a dark gradient and the teal wash. A CSS-drawn
+  rhumb-line network came first, and a rectangular grid before that — the grid
+  read as a spreadsheet.
+  - The image arrives already toned to the app's navy (its paper reads `#08121a`
+    against the page's `#06101a`), so it needs **no correction** — the gradient
+    over it is the only knob. Tune that, not the image.
+  - An earlier, near-black scan did need lifting, and the way to do it is
+    **gamma** (`ffmpeg -vf eq=gamma=1.6`), not contrast: contrast pivots on
+    mid-grey and crushes a dark image to black. That mistake produced a 0-luma
+    file.
+  - 1826×1643, ~58 kB as WebP at quality 78. Fine linework costs bits — the same
+    picture is 47 kB at q72 and 85 kB at q85, and q78 is where the hairlines stay
+    clean without paying for detail nobody sees at this opacity. Over 4 kB, so it
+    is emitted as a real asset and the service worker precaches it (the shell is
+    13 files).
+  - Cropped by `cover`, **never tiled** — the crop is not seamless and a repeat
+    would show.
+  - Deliberately *not* `background-attachment: fixed` on the body: that repaints
+    on every scroll frame and a phone feels it.
 - **Every picture needs a `--plate`.** The question drawings are black line art
   on white *and* white line art on black; a warm light mount is what makes both
   readable on a dark page. `.figures img`, `.explain__figs`, `.crib__figs`,
