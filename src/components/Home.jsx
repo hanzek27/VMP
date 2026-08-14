@@ -158,7 +158,7 @@ export default function Home({
           {tweaks.length > 0 && (
             <button className="brief__tweaks" onClick={onSettings}>
               <Icon name="gear" size={16} />
-              Zkouška upravena: {tweaks.join(' · ')}
+              Aktivní úpravy: {tweaks.join(' · ')}
             </button>
           )}
         </section>

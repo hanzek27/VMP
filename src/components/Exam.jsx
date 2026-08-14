@@ -83,8 +83,11 @@ export default function Exam({ session, settings, onChange, onFinish, onQuit }) 
   // a practice run is only in storage once something has been answered
   const saved = !scored && answeredCount > 0
 
-  // Practice modes always show the outcome – that is the point of them.
-  const feedbackOn = !scored || settings.instantFeedback
+  /* One switch, every mode. It used to be forced on for the practice modes
+   * ("that is the point of them"), which made the setting look broken: the
+   * place you spend most of your time ignored it. Practising without it is a
+   * real way to work — answer the round blind, then read the review. */
+  const feedbackOn = settings.instantFeedback
   const reveal =
     settings.markCorrect || (feedbackOn && chosen !== null) ? 'correct' : 'none'
   const locked = reveal === 'correct' && chosen !== null

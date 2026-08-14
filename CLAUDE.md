@@ -192,10 +192,17 @@ whatever is written above them in `styles.css`.
 
 | mode | source | scored | timed | feedback | resumable |
 | --- | --- | --- | --- | --- | --- |
-| `exam` | proportional draw | yes | yes (unless disabled) | only if `instantFeedback` | no |
-| `learn` | whole bank | no | no | always | yes |
-| `mistakes` | previously-missed only | no | no | always | yes |
-| `topic` | one `q.topic` only | no | no | always | yes |
+| `exam` | proportional draw | yes | yes (unless disabled) | `instantFeedback` | no |
+| `learn` | whole bank | no | no | `instantFeedback` | yes |
+| `mistakes` | previously-missed only | no | no | `instantFeedback` | yes |
+| `topic` | one `q.topic` only | no | no | `instantFeedback` | yes |
+
+`instantFeedback` governs **every** mode. It used to be forced on for the three
+practice modes, which made the setting look broken — the place a user spends
+most of their time ignored it. It now defaults to `true`, so a fresh install
+still practises with feedback; anyone whose stored settings predate the change
+keeps their `false` and has to switch it on. `markCorrect` is separate and
+still overrides everything: it reveals the right answer before you pick.
 
 Branch on **`isScored(mode)`**, not on `mode === 'learn'`. The three practice
 modes share one path; special-casing them per screen is what the `isScored`

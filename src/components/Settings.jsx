@@ -12,7 +12,7 @@ const TOGGLES = [
   {
     key: 'instantFeedback',
     title: 'Okamžitá zpětná vazba',
-    desc: 'Hned po zvolení odpovědi se ukáže, zda byla správná.',
+    desc: 'Hned po zvolení odpovědi se ukáže, zda byla správná. Platí i pro procvičování – bez ní uvidíte výsledek až v rozboru na konci.',
   },
   {
     key: 'shuffleQuestions',

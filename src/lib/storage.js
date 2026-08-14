@@ -6,8 +6,8 @@ export const DEFAULT_SETTINGS = {
   noTimeLimit: false,
   /** Mark the correct answer up front, as a study aid (setting #2). */
   markCorrect: false,
-  /** Reveal right/wrong as soon as an answer is picked. */
-  instantFeedback: false,
+  /** Reveal right/wrong as soon as an answer is picked, in every mode. */
+  instantFeedback: true,
   shuffleQuestions: true,
   /** The source always lists the correct answer first, so shuffling matters. */
   shuffleAnswers: true,
