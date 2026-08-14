@@ -314,6 +314,28 @@ indices — so it survives a re-scrape). A question enters on a wrong answer in
 are not recorded** (`sessionOutcome()` ignores `null`). Updated once at session
 finish, so changing an answer mid-exam behaves correctly.
 
+### Cleared topics
+
+`useMastered()` remembers which topics were last finished **perfectly**, per
+category, and the topic picker marks them with a green tick (`.row__clean`).
+`masteryUpdate()` in `lib/exam.js` is the whole rule:
+
+- A topic is **proved** by a practice run over that topic where every question
+  was answered and every answer was right. A perfect whole-bank run proves every
+  topic in it at once, plus `ALL_TOPICS` (`'*'`) for the "Všechny otázky" row.
+- It is **disproved** by a single wrong answer to one of its questions, in *any*
+  mode — the scored test included. Getting it wrong today is exactly the
+  evidence that the tick is stale. Any wrong answer also clears `'*'`.
+- `mistakes` mode can only disprove: it draws a subset, so finishing it says
+  nothing about a whole topic. Neither does a run taken with `markCorrect` on,
+  where the answer was on screen the whole time — hence the `settings` argument.
+- Keyed by topic id, so a re-scrape cannot shift a tick onto the wrong row.
+  Disproved topics are deleted rather than stored as `false`: the map is a list
+  of what is clean *now*.
+
+The tile under Trénink counts them ("11 okruhů · 3 bez chyby") and a perfect
+practice run gets a green result header with a *Zvládnuto* stamp.
+
 ### Saved practice progress
 
 `useProgress()` keeps unfinished **practice** runs, so closing the app mid-training
@@ -339,7 +361,7 @@ is not a loss. A scored test is never saved — it gets submitted or it's gone.
 
 localStorage keys: `vmp.category.v1` (the home screen's category),
 `vmp.settings.v1`, `vmp.history.v1` (last 20), `vmp.missed.v1`,
-`vmp.progress.v1`. All reads are try/caught — private mode must not crash the app.
+`vmp.mastered.v1`, `vmp.progress.v1`. All reads are try/caught — private mode must not crash the app.
 
 ## PWA — installable, offline, back-button aware
 

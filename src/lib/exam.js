@@ -247,6 +247,55 @@ export function sessionOutcome(session) {
   return { wrong, right }
 }
 
+/** The key a whole-bank run is remembered under, next to the topic ids. */
+export const ALL_TOPICS = '*'
+
+/**
+ * What a finished run says about topic mastery.
+ *
+ * A topic is *proved* by a practice run over that topic in which every question
+ * was answered and every answer was right — nothing weaker, because "mastered"
+ * has to mean it. A perfect whole-bank run proves every topic in it at once.
+ *
+ * Any wrong answer *disproves* that question's topic, in every mode including
+ * the scored test: getting it wrong today is exactly the evidence that the
+ * badge is out of date.
+ *
+ * `mistakes` mode can only disprove. It draws a subset of one category's
+ * questions, so finishing it perfectly says nothing about any whole topic — and
+ * neither does a run taken with `markCorrect` on, where the right answer was
+ * on screen the whole time.
+ */
+export function masteryUpdate(session, settings = {}) {
+  const broken = new Set()
+  const topics = new Set()
+  let answered = 0
+  let correct = 0
+
+  session.items.forEach((item, i) => {
+    const a = session.answers[i]
+    topics.add(item.q.topic)
+    if (a === null) return
+    answered++
+    if (a === item.correctIdx) correct++
+    else broken.add(item.q.topic)
+  })
+
+  // a wrong answer anywhere also means the bank as a whole is not clean
+  if (broken.size) broken.add(ALL_TOPICS)
+
+  const perfect = answered === session.items.length && correct === answered
+  const provable =
+    !isScored(session.mode) && session.mode !== 'mistakes' && !settings.markCorrect
+  const mastered = !perfect || !provable
+    ? []
+    : session.mode === 'topic'
+      ? [session.topic]
+      : [ALL_TOPICS, ...topics]
+
+  return { mastered, broken: [...broken] }
+}
+
 /** Czech agreement for counted nouns: 1 / 2–4 / 0 and 5+. */
 export const plural = (n, one, few, many) => (n === 1 ? one : n >= 2 && n <= 4 ? few : many)
 

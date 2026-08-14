@@ -10,11 +10,19 @@ import UpdateToast from './components/UpdateToast'
 import {
   createSession,
   isScored,
+  masteryUpdate,
   scoreSession,
   sessionOutcome,
   unpackSession,
 } from './lib/exam'
-import { progressKey, useHistory, useMissed, useProgress, useSettings } from './lib/storage'
+import {
+  progressKey,
+  useHistory,
+  useMastered,
+  useMissed,
+  useProgress,
+  useSettings,
+} from './lib/storage'
 import { getCategory, runLabel } from './categories'
 import { getCheatsheet } from './data/cheatsheets'
 
@@ -22,6 +30,7 @@ export default function App() {
   const [settings, updateSettings, resetSettings] = useSettings()
   const [history, addHistory, clearHistory] = useHistory()
   const [missed, recordMissed, clearMissed] = useMissed()
+  const [mastered, recordMastery] = useMastered()
   const [runs, saveProgress, dropProgress] = useProgress()
   const [view, setView] = useState('home')
   const [session, setSession] = useState(null)
@@ -102,6 +111,7 @@ export default function App() {
       const done = { ...finished, finishedAt: Date.now() }
       setSession(done)
       recordMissed(done.categoryId, sessionOutcome(done))
+      recordMastery(done.categoryId, masteryUpdate(done, settings))
       // a finished run is not something to come back to
       if (!isScored(done.mode)) dropProgress(progressKey(done))
       if (isScored(done.mode)) {
@@ -118,7 +128,7 @@ export default function App() {
       }
       setView('result')
     },
-    [addHistory, recordMissed, dropProgress]
+    [addHistory, recordMissed, recordMastery, dropProgress, settings]
   )
 
   const home = useCallback(() => {
@@ -144,6 +154,7 @@ export default function App() {
     screen = (
       <Result
         session={session}
+        settings={settings}
         missedCount={missed[session.categoryId]?.length ?? 0}
         onHome={home}
         onRetry={() => start(session.categoryId, session.mode, session.topic)}
@@ -181,6 +192,7 @@ export default function App() {
         settings={settings}
         history={history}
         missed={missed}
+        mastered={mastered}
         runs={runs}
         onClearHistory={clearHistory}
         onStart={start}

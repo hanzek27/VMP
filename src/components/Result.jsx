@@ -2,7 +2,14 @@ import { useMemo, useState } from 'react'
 import QuestionView from './QuestionView'
 import Icon from './Icon'
 import { getCategory, groupLabel } from '../categories'
-import { formatDuration, isScored, plural, scoreByGroup, scoreSession } from '../lib/exam'
+import {
+  formatDuration,
+  isScored,
+  masteryUpdate,
+  plural,
+  scoreByGroup,
+  scoreSession,
+} from '../lib/exam'
 import { useBackGuard } from '../lib/backGuard'
 import { topicLabel } from '../topics'
 
@@ -55,6 +62,7 @@ function Dial({ percent, passPercent, passed }) {
 
 export default function Result({
   session,
+  settings,
   missedCount = 0,
   onHome,
   onRetry,
@@ -68,6 +76,11 @@ export default function Result({
   useBackGuard(true, onHome)
 
   const score = useMemo(() => scoreSession(session), [session])
+  // the same verdict the home screen's badge is written from
+  const clean = useMemo(
+    () => masteryUpdate(session, settings).mastered.length > 0,
+    [session, settings]
+  )
   const groups = useMemo(() => scoreByGroup(session), [session])
 
   const rows = session.items
@@ -76,7 +89,11 @@ export default function Result({
 
   return (
     <div className="page">
-      <header className={`resulthead ${!scored ? 'is-learn' : score.passed ? 'is-pass' : 'is-fail'}`}>
+      <header
+        className={`resulthead ${
+          !scored ? (clean ? 'is-clean' : 'is-learn') : score.passed ? 'is-pass' : 'is-fail'
+        }`}
+      >
         <div className="container container--narrow">
           {!scored ? (
             <>
@@ -89,6 +106,11 @@ export default function Result({
                     : 'procvičování'}
               </p>
               <h1>{mistakes && missedCount === 0 ? 'Seznam chyb je prázdný' : 'Hotovo'}</h1>
+              {clean && (
+                <p className="resulthead__mark">
+                  <span className="stamp is-pass">Zvládnuto</span>
+                </p>
+              )}
               <p className="resulthead__lead">
                 {mistakes ? (
                   <>

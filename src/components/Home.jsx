@@ -8,7 +8,7 @@ import {
   topicsOf,
   totalQuestions,
 } from '../categories'
-import { formatDuration, plural, runProgress } from '../lib/exam'
+import { ALL_TOPICS, formatDuration, plural, runProgress } from '../lib/exam'
 import { progressKey, useCategory } from '../lib/storage'
 import { useBackGuard } from '../lib/backGuard'
 import { useInstall } from '../lib/pwa'
@@ -35,6 +35,7 @@ export default function Home({
   settings,
   history,
   missed,
+  mastered,
   runs,
   onClearHistory,
   onStart,
@@ -82,6 +83,10 @@ export default function Home({
   const cribs = CHEATSHEETS.filter((s) => s.categoryId === cat.id)
   const missedCount = missed[cat.id]?.length ?? 0
   const last = history.find((h) => h.categoryId === cat.id)
+
+  // topics finished with every question right, so far
+  const clean = mastered[cat.id] ?? {}
+  const cleanCount = topics.filter((t) => clean[t.id]).length
 
   /** The saved run behind a picker row, if there is one. */
   const runFor = (mode, topic = null) =>
@@ -210,7 +215,9 @@ export default function Home({
               <span className="tile__name">Okruhy</span>
               <span className="tile__meta">
                 {topics.length} {plural(topics.length, 'okruh', 'okruhy', 'okruhů')} ·{' '}
-                {totalQuestions(cat.id)} otázek
+                {cleanCount > 0
+                  ? `${cleanCount} bez chyby`
+                  : `${totalQuestions(cat.id)} otázek`}
               </span>
             </button>
 
@@ -336,6 +343,7 @@ export default function Home({
                 Všechny otázky
                 <ProgressNote run={runFor('learn')} />
               </span>
+              <CleanMark on={clean[ALL_TOPICS]} />
               <span className="row__count">{totalQuestions(cat.id)}</span>
             </button>
           </li>
@@ -353,6 +361,7 @@ export default function Home({
                   {t.label}
                   <ProgressNote run={runFor('topic', t.id)} />
                 </span>
+                <CleanMark on={clean[t.id]} />
                 <span className="row__count">{t.count}</span>
               </button>
             </li>
@@ -480,5 +489,22 @@ function ProgressNote({ run }) {
     <span className="row__note row__note--on">
       rozdělaných {run.answered}/{run.total}
     </span>
+  )
+}
+
+/**
+ * The mark on a topic finished with every question right. It disappears again
+ * the moment one of that topic's questions is answered wrong, so it always
+ * means "clean as of now" rather than "was clean once".
+ */
+function CleanMark({ on }) {
+  if (!on) return null
+  return (
+    <Icon
+      name="verified"
+      size={18}
+      className="row__clean"
+      title="Zvládnuto – naposledy celé správně"
+    />
   )
 }

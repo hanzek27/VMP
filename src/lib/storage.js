@@ -18,6 +18,7 @@ const SETTINGS_KEY = 'vmp.settings.v1'
 const HISTORY_KEY = 'vmp.history.v1'
 const MISSED_KEY = 'vmp.missed.v1'
 const PROGRESS_KEY = 'vmp.progress.v1'
+const MASTERED_KEY = 'vmp.mastered.v1'
 
 function read(key, fallback) {
   try {
@@ -123,6 +124,33 @@ export function useMissed() {
   }, [])
 
   return [missed, record, clear]
+}
+
+/**
+ * Topics finished perfectly, per category: `{ [categoryId]: { [topic]: when } }`
+ * (`ALL_TOPICS` for a clean whole-bank run). Keyed by topic id, not by index,
+ * so a re-scrape cannot shift the badges onto the wrong rows.
+ *
+ * `masteryUpdate()` in lib/exam.js decides what a finished run proved and
+ * disproved; this only writes it down. A topic that gets disproved is deleted
+ * rather than set to false — the map stays a list of what is currently clean.
+ */
+export function useMastered() {
+  const [mastered, setMastered] = useState(() => read(MASTERED_KEY, {}))
+
+  const record = useCallback((categoryId, { mastered: won, broken }) => {
+    if (!won.length && !broken.length) return
+    setMastered((m) => {
+      const current = { ...(m[categoryId] ?? {}) }
+      for (const topic of broken) delete current[topic]
+      for (const topic of won) current[topic] = Date.now()
+      const next = { ...m, [categoryId]: current }
+      write(MASTERED_KEY, next)
+      return next
+    })
+  }, [])
+
+  return [mastered, record]
 }
 
 /**

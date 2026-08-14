@@ -1736,6 +1736,20 @@ img {
   color: var(--faint);
 }
 
+/* a practice run finished with every answer right */
+.resulthead.is-clean {
+  background: linear-gradient(180deg, #0a2a20, var(--void));
+}
+
+.resulthead__mark {
+  margin: 14px 0 0;
+}
+
+/* the mark on a topic row that is currently clean */
+.row__clean {
+  color: var(--ok);
+}
+
 /* the verdict, stamped */
 .stamp {
   display: inline-block;
