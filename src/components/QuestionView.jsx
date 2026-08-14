@@ -1,4 +1,5 @@
 import { topicIcon, topicLabel } from '../topics'
+import Icon from './Icon'
 
 const LETTERS = ['a', 'b', 'c', 'd', 'e']
 
@@ -38,7 +39,7 @@ export default function QuestionView({
       <div className="question__meta">
         <span className="chip chip--num">otázka č. {q.n}</span>
         <span className="chip">
-          <span aria-hidden="true">{topicIcon(q.topic)}</span>{' '}
+          <Icon name={topicIcon(q.topic)} size={15} />
           {topicLabel(categoryId, q.topic)}
         </span>
       </div>
@@ -74,9 +75,9 @@ export default function QuestionView({
                   {ans.t && <span className="answer__text">{ans.t}</span>}
                   <Figures names={ans.img} alt={`Možnost ${LETTERS[i]}`} />
                 </span>
-                {revealing && (
-                  <span className="answer__mark" aria-hidden="true">
-                    {isCorrect ? '✓' : isChosen ? '✕' : ''}
+                {revealing && (isCorrect || isChosen) && (
+                  <span className="answer__mark">
+                    <Icon name={isCorrect ? 'check' : 'close'} size={20} />
                   </span>
                 )}
               </button>

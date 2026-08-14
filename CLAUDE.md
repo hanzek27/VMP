@@ -104,18 +104,20 @@ three categories, e.g. `svetla-plavidel`, `vyhybaci-pravidla`, `meteorologie`).
 src/
   categories.js        exam params, group-code → human label
   lib/exam.js          sampling, shuffling, scoring, mode predicates
-  lib/storage.js       localStorage hooks: settings, history, missed
+  lib/storage.js       localStorage hooks: category, settings, history, missed
   lib/pwa.js           SW registration, install prompt, update, image cache
   lib/backGuard.js     system back button → close sheet / confirm quit
   components/
-    Home.jsx           category cards, mode launch, attempt history
+    Home.jsx           dashboard for **one** category: brief, tiles, log
     Settings.jsx       toggles + missed-list management
-    Exam.jsx           question runner: timer, nav, overview sheet, dialogs
+    Exam.jsx           question runner: timer, nav, question list, dialogs
     QuestionView.jsx   one question + options — shared by Exam and Result
     Result.jsx         score/pass-fail, per-set breakdown, answer review
     Explainer.jsx      picture + correct answer, browse-only (no session)
     Cheatsheet.jsx     renders one tahák from data/cheatsheets.js
     Lightbox.jsx       tap-to-enlarge picture overlay + its ZoomImage thumbnail
+    Icon.jsx           the line-art icon set (see The look)
+    CompassRose.jsx    the app's mark, also the favicon
     OfflineSection.jsx offline/install block inside Settings
     UpdateToast.jsx    "new version" bar, rendered over every screen
 ```
@@ -126,6 +128,65 @@ react-router, no state library. Session shape is built by `createSession()` in
 `src/lib/exam.js`. `explain` and `crib` are the odd ones out — they hold a
 category id and a cheat-sheet id, not a session, because neither screen records
 an answer.
+
+### The home screen is one category at a time
+
+`Home.jsx` shows a single category and remembers which (`useCategory()`,
+`vmp.category.v1`). The three categories used to be three stacked cards, which
+meant the same four buttons three times and a long scroll to reach anything.
+
+The order is: masthead → category switcher → **brief** (name, the three numbers,
+the pass scale, one brass *Spustit zkoušku*) → unfinished runs → four training
+tiles (Okruhy / Moje chyby / Obrázky / Taháky) → ship's log.
+
+- The tiles carry their own counts and disable themselves when there is nothing
+  behind them (S has no pictures, only M has taháky).
+- Okruhy and Taháky open a sheet; the sheet is `<Sheet>` inside `Home.jsx`, the
+  same `.scrim`/`.panel` markup the exam overview uses.
+- Unfinished runs are filtered to the shown category; a count of the ones in
+  *other* categories is printed underneath, so nothing goes invisible.
+- `<PassScale>` draws the pass mark as a line on a scale, with the last attempt
+  for that category filled in behind it. It is the one place the two numbers
+  that matter (pass mark, last score) are shown against each other.
+
+Home unmounts while an exam runs, so `useCategory()` re-reads on mount and there
+is no second copy of the state to keep in sync.
+
+### Wide screens
+
+Mobile-first, but the extra width goes to content rather than margins. Three
+steps, all of them **only** inside `min-width` queries — the phone layout is
+whatever is written above them in `styles.css`.
+
+| from | what changes |
+| ---: | --- |
+| 900 px | home splits into two columns (`.deck` / `.deck__side`), the category tabs lay out in a row, result breakdown and tahák cards go two-up |
+| 1024 px | the exam runs as two panes: the question list becomes a permanent sidebar, the *Přehled* button disappears, keyboard hints appear |
+| 1160 px | the picture gallery goes to three columns |
+
+- **`display: contents` is what keeps the exam honest.** `.exammain` and
+  `.runcol` wrap the body and the nav so a desktop can lay them out as a grid;
+  below 1024 px both are `display: contents`, so the DOM collapses back to the
+  same flex column the phone always had. Don't give either a background,
+  border or padding — `contents` would drop it.
+- `Exam.jsx` renders **one** `<QuestionList>` component in two places: the
+  sheet and the sidebar. They differ only in the wrapper class and which ref
+  marks the current row (the sheet centres it on open, the sidebar follows the
+  current question with `block: 'nearest'`).
+- Finishing early lives in the sidebar's foot on a desktop and in the sheet's
+  foot on a phone — the same button, never both on screen at once.
+- **The keyboard cursor is real DOM focus, not state.** `↑`/`↓` move focus
+  between the option buttons (wrapping at the ends), which means the browser
+  draws the ring, a screen reader announces the option, and — because the
+  options are ordinary `<button>`s — `Enter` and `Space` activate the focused
+  one with no key handling of ours at all. `1`–`3` still pick an option
+  outright, `←`/`→` change question, `F` flags. The cursor deliberately keeps
+  its position across questions, so answering a run is ↓↓ Enter → ↓ Enter →.
+- The handler returns early while the overview sheet or a dialog is open — that
+  is the one thing on screen that owns the keyboard at that moment.
+- `.keyhints` only *says* any of this where there is a keyboard to use.
+- The nav keeps its full width so the rule above it spans the pane; its padding
+  is what lines the buttons up with the answers.
 
 ### Three modes
 
@@ -269,7 +330,8 @@ is not a loss. A scored test is never saved — it gets submitted or it's gone.
   picker, "Všechny otázky", "Jen moje chyby" and the result screen's retry), and
   Home lists the runs with resume + a confirmed delete.
 
-localStorage keys: `vmp.settings.v1`, `vmp.history.v1` (last 20), `vmp.missed.v1`,
+localStorage keys: `vmp.category.v1` (the home screen's category),
+`vmp.settings.v1`, `vmp.history.v1` (last 20), `vmp.missed.v1`,
 `vmp.progress.v1`. All reads are try/caught — private mode must not crash the app.
 
 ## PWA — installable, offline, back-button aware
@@ -294,8 +356,8 @@ online-only):
 
 Non-obvious bits:
 
-1. **Two caches.** `vmp-shell-<hash>` (HTML/JS/CSS/icons, ~460 kB incl. the
-   whole question bank) is precached on install and replaced wholesale on
+1. **Two caches.** `vmp-shell-<hash>` (HTML/JS/CSS/fonts/icons, ~530 kB incl.
+   the whole question bank and the three subset woff2) is precached on install and replaced wholesale on
    update. `vmp-media-v1` holds the 242 images, is filled lazily or on demand
    from Settings, and **survives updates** — re-downloading 5 MB per release is
    not acceptable on mobile data.
@@ -306,11 +368,17 @@ Non-obvious bits:
 3. **The shell version is a hash of output filenames + sizes.** Asset names
    already carry a content hash; the sizes are there for `public/` files, whose
    names never change. A same-size edit to an image is the one thing it misses.
-4. **Register against `document.baseURI`, not `import.meta.url`.** The bundle
+4. **Cache lookups pass `ignoreVary: true`.** A host that answers with
+   `Vary: Origin` — `vite preview` does, and some CDNs do — stores a precache
+   entry that a later page request (which carries an `Origin` header) will not
+   match, and the app is offline-broken with a full cache. Everything cached is
+   same-origin static output, so there is nothing to legitimately vary on.
+   Without this the app looked fine online and died the moment the network did.
+5. **Register against `document.baseURI`, not `import.meta.url`.** The bundle
    lives in `assets/`, which would scope the worker to `/assets/`.
-5. `--safe-t` (`env(safe-area-inset-top)`) pads `.hero`, `.topbar` and
+6. `--safe-t` (`env(safe-area-inset-top)`) pads `.hero`, `.topbar` and
    `.examhead`: installed on iOS the status bar sits over the page.
-6. `overscroll-behavior` is `contain` on the body and both scroll regions —
+7. `overscroll-behavior` is `contain` on the body and both scroll regions —
    installed, a pull-to-refresh would silently throw away an exam.
 
 ### System back button
@@ -334,10 +402,106 @@ re-pushed on the next commit.
   wrong; `zbývají 3 otázky` is right.
 - Images resolve via `` `${import.meta.env.BASE_URL}img/${name}` `` — never a
   bare absolute path, or the relative-base build breaks.
-- Styling is one hand-written `src/styles.css` with CSS custom properties and a
-  `prefers-color-scheme: dark` block. Mobile-first; nautical navy/teal palette.
-  No CSS framework — don't add one without asking.
-- Touch targets ≥44 px; the page must never scroll horizontally at 390 px.
+- Styling is one hand-written `src/styles.css` with CSS custom properties.
+  Mobile-first, no CSS framework — don't add one without asking. See
+  [The look](#the-look-dark-chart--brass) for the palette.
+- Touch targets ≥44 px; the page must never scroll horizontally at 320, 390 or
+  768 px. Check 1024 px too — that is where the exam changes shape.
+
+## The look: instrument panel
+
+One theme, always dark — `color-scheme: dark` on `:root`, no
+`prefers-color-scheme` fork, and `<meta name="theme-color">` is a single value.
+The reference is an instrument on a chart table at night: near-black water,
+amber-brass fittings, warm paper ink.
+
+- **Soft corners, hard rules.** `--r: 8px` / `--r-lg: 12px`, hairline borders
+  instead of shadows, and chart-frame corner ticks on the panels that matter
+  (`.brief::before`, `.tile::before` — eight 1 px gradients).
+- **Palette.** `--brass` (a saturated amber, *not* a pale gold — that read as
+  washed out) is the only bright colour and it means *action*: primary button,
+  active tab, focus ring, counters. `--sea` is the quiet secondary. `--flag` is
+  a lighter yellow kept deliberately apart from the amber, for "review this"
+  and "settings are modified". Green and red are reserved for right/wrong and
+  pass/fail — never decoration. `--edge` is the cool structural hairline,
+  `--edge-brass` the warm one used on chart frames and over dark headers.
+- **Type is one family: IBM Plex Sans, self-hosted** (`--sans`; `--display`
+  aliases it). Headings and numbers are held apart by weight (700) and tracking,
+  not by a second typeface. A serif display face was tried and rejected — the
+  questions are long Czech sentences read under time pressure. See
+  [Fonts](#fonts) for the files.
+- **Buttons are flat.** `.btn--go` is solid `--brass` with no gradient, no inner
+  highlight and no outer glow; label at 0.98 rem, the rest at 0.92 rem.
+- **The answer states are graded by how much they mean.** Right and wrong are
+  loud — a 2 px border in the state colour, a 15–18 % tint across the whole
+  option, and the letter badge filled solid — while merely *picked* (and hover)
+  is quiet: a dimmed amber edge and a 7 % wash, because "I chose this" is not a
+  verdict. Colour is never the only carrier; the ✓/✕ mark says the same thing.
+  There is exactly **one** look for "this is the right answer", whether it came
+  from the `markCorrect` setting or from tapping it. Keeping it that way needs
+  the hover rule excluded from the state classes
+  (`.answer:hover:not(:disabled):not(.is-correct):not(.is-wrong):not(.is-chosen)`):
+  a bare `.answer:hover` outranks `.answer.is-correct` on specificity and
+  repaints the verdict grey under the cursor — which reads as a second, weaker
+  kind of correct.
+- **`--plate` is dark.** The frames behind the drawings used to be parchment.
+  Roughly half the source images are white-on-black night scenes and now blend
+  into the page; the daytime ones carry their own white background in the JPEG,
+  which no frame colour can change.
+
+### Fonts
+
+`src/assets/fonts/plex-sans-{400,600,700}.woff2`, ~23 kB each.
+
+- They are **subset to the ~170 glyphs this app actually uses** — the question
+  bank, the taháky and the UI copy — which is what keeps them at a third of the
+  full latin+latin-ext size. Rebuild by re-running the Google Fonts request
+  `css2?family=IBM+Plex+Sans:wght@400;600;700&text=<charset>`; a re-scrape that
+  introduces a character outside the subset falls back to the system sans for
+  that one glyph.
+- They live in `src/assets/`, **not** `public/`: the bundler rewrites the URL
+  relative to the emitted CSS, which is what `base: './'` needs. A `public/`
+  path would have to be absolute and would break the relative-base build.
+- They are part of the shell precache, so the app renders the same offline.
+- **`body::before` carries the page texture** — graticule and water wash — as one
+  fixed layer at `z-index: -1`. Deliberately *not* `background-attachment: fixed`
+  on the body: that repaints on every scroll frame and a phone feels it.
+- **Every picture needs a `--plate`.** The question drawings are black line art
+  on white *and* white line art on black; a warm light mount is what makes both
+  readable on a dark page. `.figures img`, `.explain__figs`, `.crib__figs`,
+  `.qlist__thumb` and `.lightbox__img` all carry one. No filters on the images
+  themselves — buoy and light colours are the answer to the question.
+- One loud thing per screen: `.btn--go`. If a screen has two, one of them is
+  wrong.
+
+### Icons (`components/Icon.jsx`)
+
+`<Icon name="anchor" />` renders line art on a 24×24 grid stroked with
+`currentColor`. The app used emoji before; they render as somebody else's
+cartoon on every platform, ignore the palette, and made a screen of them read as
+a children's app. The set is nautical objects the exam actually talks about, so
+lists are scannable by shape.
+
+- `topics.js` maps every topic to an icon name (`TOPIC_ICONS`), and
+  `data/cheatsheets.js` uses names in its `icon` fields too.
+- An **unknown name renders as text**, so a leftover emoji still shows up rather
+  than blanking the row.
+- Two icons that can appear in the same list must not look alike — `fog` (three
+  wavy lines) and `waves` collided in the M picker, which is why `vodni-sporty`
+  uses `lifering`.
+- `CompassRose.jsx` takes `compact` for the masthead mark: same geometry, ticks
+  and cardinal letters dropped because they turn to mush at 30 px.
+- `public/favicon.svg` is the same rose. The PNG icons are rendered from it with
+  headless Chrome (`--headless --screenshot --window-size=N,N` over a wrapper
+  HTML); the maskable one insets the mark to ~74 % for the safe zone.
+
+### The result dial
+
+`Result.jsx` draws the score as a graduated half-dial: ticks every 10 %, a
+needle at the score, and **the pass mark as its own line on the scale** — the
+one number that decides the outcome belongs on the instrument. The verdict is a
+rotated `.stamp`. The percentage sits *below* the hub; above it, the needle runs
+straight through the text at some angles.
 
 ## Testing
 
@@ -369,6 +533,11 @@ and *Procvičit* opens the right topic with the right question count. Card image
 are lazy — scroll the whole page before asserting on `naturalWidth`, or you will
 "find" two dozen broken pictures that are simply below the fold.
 
+Offline is the one thing `vite preview` cannot be trusted on by itself: it
+sends `Vary: Origin`, which is exactly the header the service worker now has to
+work around. Test it against a plain static server too — `python3 -m http.server`
+inside `dist/` — so a genuine caching bug cannot hide behind a preview quirk.
+
 PWA, verified the same way against `vite preview`: worker registers and claims
 the page, manifest parses, app and bank boot with the network cut, "download
 all images" completes and images then load offline, back closes sheet →
@@ -386,7 +555,8 @@ change that survives into `dist/` when testing this.
   a file you just created, and not as a helpful last step. Leave changes in the
   working tree and say what you changed. Don't offer to commit either; if the
   user wants it committed, they'll do it themselves.
-- The user edits copy directly in the components (e.g. the hero lead in
-  `Home.jsx`). Don't revert their wording when refactoring nearby.
+- The user edits copy directly in the components (e.g. `.lede` at the top of
+  `Home.jsx`). Don't revert their wording when refactoring nearby — that line
+  has already been lost once in a redesign and had to be put back.
 - Images (5.1 MB) are committed to the repo intentionally, so the app works
   offline and needs no CDN.

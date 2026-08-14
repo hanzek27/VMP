@@ -29,6 +29,7 @@ const TOGGLES = [
 import { CATEGORIES } from '../categories'
 import { useBackGuard } from '../lib/backGuard'
 import OfflineSection from './OfflineSection'
+import Icon from './Icon'
 
 export default function Settings({
   settings,
@@ -46,11 +47,11 @@ export default function Settings({
   return (
     <div className="page">
       <header className="topbar">
-        <button className="btn btn--ghost" onClick={onBack}>
-          <span aria-hidden="true">←</span> Zpět
+        <button className="iconbtn iconbtn--onhead" onClick={onBack} aria-label="Zpět">
+          <Icon name="back" />
         </button>
         <h1 className="topbar__title">Nastavení</h1>
-        <button className="btn btn--link" onClick={onReset}>
+        <button className="linkbtn" onClick={onReset}>
           Výchozí
         </button>
       </header>
@@ -79,7 +80,7 @@ export default function Settings({
           <div className="mistakes__head">
             <h2>Seznam chyb</h2>
             {rows.length > 0 && (
-              <button className="btn btn--link" onClick={() => onClearMissed()}>
+              <button className="linkbtn" onClick={() => onClearMissed()}>
                 Vymazat vše
               </button>
             )}
@@ -95,7 +96,7 @@ export default function Settings({
                 <li key={c.id}>
                   <span className="mistakes__cat">{c.name}</span>
                   <span className="mistakes__n">{n}</span>
-                  <button className="btn btn--link" onClick={() => onClearMissed(c.id)}>
+                  <button className="linkbtn" onClick={() => onClearMissed(c.id)}>
                     Vymazat
                   </button>
                 </li>
@@ -106,11 +107,10 @@ export default function Settings({
 
         <OfflineSection />
 
-        <div className="notice notice--muted">
-          Režimy <strong>Procvičování</strong> a <strong>Jen moje chyby</strong>{' '}
-          spustíte na úvodní obrazovce u každé kategorie. Ani jeden se neboduje a
-          neběží v nich čas.
-        </div>
+        <p className="footnote">
+          Okruhy, chyby, obrázky i taháky najdete na úvodní obrazovce – u každé
+          kategorie zvlášť. Nic z toho se neboduje a neběží v tom čas.
+        </p>
       </main>
     </div>
   )

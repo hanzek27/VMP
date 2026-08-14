@@ -9,6 +9,7 @@ export const CATEGORIES = [
   {
     id: 'M',
     name: 'M a M20',
+    short: 'Vnitrozemí',
     subtitle: 'Vůdce malého plavidla – vnitrozemské vodní cesty',
     questionCount: 35,
     passMark: 30,
@@ -18,6 +19,7 @@ export const CATEGORIES = [
   {
     id: 'S',
     name: 'S a S20',
+    short: 'Plachetnice',
     subtitle: 'Doplňková zkouška pro plachetnice',
     questionCount: 14,
     passMark: 11,
@@ -27,6 +29,7 @@ export const CATEGORIES = [
   {
     id: 'C',
     name: 'C plavba na moři',
+    short: 'Moře',
     subtitle: 'Námořní jachtařský průkaz – příbřežní plavba',
     questionCount: 28,
     passMark: 24,
@@ -127,5 +130,6 @@ export function runLabel({ categoryId, mode, topic }) {
   return 'Všechny otázky'
 }
 
+/** Icon name for a run, for `<Icon>` (see components/Icon.jsx). */
 export const runIcon = ({ mode, topic }) =>
-  mode === 'mistakes' ? '✕' : mode === 'topic' ? topicIcon(topic) : '📚'
+  mode === 'mistakes' ? 'mistakes' : mode === 'topic' ? topicIcon(topic) : 'folder'

@@ -9,11 +9,13 @@ import {
   totalQuestions,
 } from '../categories'
 import { formatDuration, plural, runProgress } from '../lib/exam'
-import { progressKey } from '../lib/storage'
+import { progressKey, useCategory } from '../lib/storage'
 import { useBackGuard } from '../lib/backGuard'
 import { useInstall } from '../lib/pwa'
 import { topicIcon } from '../topics'
 import { CHEATSHEETS } from '../data/cheatsheets'
+import CompassRose from './CompassRose'
+import Icon from './Icon'
 
 const dateFmt = new Intl.DateTimeFormat('cs-CZ', {
   day: 'numeric',
@@ -22,6 +24,13 @@ const dateFmt = new Intl.DateTimeFormat('cs-CZ', {
   minute: '2-digit',
 })
 
+/**
+ * The home screen shows **one category at a time**. The three categories used
+ * to sit side by side as three identical cards, which meant the same four
+ * buttons three times over and a screen you had to scroll past to reach
+ * anything. Picking the category once turns the rest of the screen into that
+ * category's dashboard, and the choice is remembered.
+ */
 export default function Home({
   settings,
   history,
@@ -35,10 +44,13 @@ export default function Home({
   onCrib,
   onSettings,
 }) {
-  const [picker, setPicker] = useState(null)
+  const [savedId, selectCategory] = useCategory(CATEGORIES[0].id)
+  const cat = getCategory(savedId) ?? CATEGORIES[0]
+  // 'topics' | 'cribs' | null
+  const [sheet, setSheet] = useState(null)
   const [dropKey, setDropKey] = useState(null)
   const { canInstall, install } = useInstall()
-  useBackGuard(!!picker, () => setPicker(null))
+  useBackGuard(!!sheet, () => setSheet(null))
   useBackGuard(!!dropKey, () => setDropKey(null))
 
   // unfinished practice runs, newest first
@@ -46,11 +58,11 @@ export default function Home({
     () =>
       Object.entries(runs)
         .map(([key, run]) => {
-          const cat = getCategory(run?.categoryId)
-          if (!cat || !Array.isArray(run.answers) || !Array.isArray(run.qs)) return null
+          const c = getCategory(run?.categoryId)
+          if (!c || !Array.isArray(run.answers) || !Array.isArray(run.qs)) return null
           return {
             key,
-            cat,
+            cat: c,
             label: runLabel(run),
             icon: runIcon(run),
             updatedAt: run.updatedAt ?? 0,
@@ -61,83 +73,128 @@ export default function Home({
         .sort((a, b) => b.updatedAt - a.updatedAt),
     [runs]
   )
+  const mine = resumable.filter((r) => r.cat.id === cat.id)
+  const elsewhere = resumable.length - mine.length
   const dropping = resumable.find((r) => r.key === dropKey)
+
+  const topics = topicsOf(cat.id)
+  const pictures = imageCount(cat.id)
+  const cribs = CHEATSHEETS.filter((s) => s.categoryId === cat.id)
+  const missedCount = missed[cat.id]?.length ?? 0
+  const last = history.find((h) => h.categoryId === cat.id)
 
   /** The saved run behind a picker row, if there is one. */
   const runFor = (mode, topic = null) =>
-    resumable.find((r) => r.key === progressKey({ categoryId: picker, mode, topic }))
+    resumable.find((r) => r.key === progressKey({ categoryId: cat.id, mode, topic }))
+
+  const tweaks = [
+    settings.noTimeLimit && 'bez limitu',
+    settings.markCorrect && 'označená odpověď',
+    settings.instantFeedback && 'okamžitá zpětná vazba',
+  ].filter(Boolean)
 
   return (
     <div className="page">
-      <header className="hero">
-        <div className="hero__inner">
-          <div className="hero__text">
-            <p className="hero__eyebrow">Státní plavební správa</p>
-            <h1>Přípravné testy VMP</h1>
-            <p className="hero__lead">Hromada kravin a nesrovnalostí prostě to nabifluj</p>
-            {canInstall && (
-              <button className="btn btn--install hero__install" onClick={install}>
-                <span aria-hidden="true">⤓</span> Instalovat aplikaci
-              </button>
-            )}
-          </div>
-          <button className="btn btn--ghost hero__settings" onClick={onSettings}>
-            <span aria-hidden="true">⚙</span> Nastavení
+      <header className="mast">
+        <div className="mast__inner">
+          <CompassRose className="mast__mark" compact />
+          <span className="mast__name">VMP</span>
+          <button className="iconbtn" onClick={onSettings} aria-label="Nastavení">
+            <Icon name="gear" />
           </button>
         </div>
-        <svg className="hero__wave" viewBox="0 0 1440 80" preserveAspectRatio="none" aria-hidden="true">
-          <path d="M0,40 C240,80 480,0 720,24 C960,48 1200,80 1440,44 L1440,80 L0,80 Z" />
-        </svg>
+
+        <div className="switch3" role="tablist" aria-label="Kategorie zkoušky">
+          {CATEGORIES.map((c) => (
+            <button
+              key={c.id}
+              role="tab"
+              aria-selected={c.id === cat.id}
+              className={`switch3__btn ${c.id === cat.id ? 'is-on' : ''}`}
+              onClick={() => selectCategory(c.id)}
+            >
+              <span className="switch3__id">{c.id}</span>
+              <span className="switch3__name">{c.short}</span>
+            </button>
+          ))}
+        </div>
       </header>
 
-      <main className="container">
-        {(settings.noTimeLimit || settings.markCorrect) && (
-          <div className="notice">
-            <strong>Aktivní úpravy:</strong>{' '}
-            {[
-              settings.noTimeLimit && 'bez časového limitu',
-              settings.markCorrect && 'správná odpověď je označena',
-            ]
-              .filter(Boolean)
-              .join(' · ')}
-          </div>
-        )}
+      <main className="container container--deck">
+        {/* the user's own line – leave the wording alone */}
+        <p className="lede">Hromada kravin a nesrovnalostí prostě to nabifluj</p>
 
-        {resumable.length > 0 && (
-          <section className="resume">
-            <div className="resume__head">
-              <h2>Rozpracované procvičování</h2>
-              <p className="resume__sub">Pokračuj tam, kde jsi skončil.</p>
+        {/* one column on a phone; the brief and the training deck sit side by
+            side once there is room for both above the fold */}
+        <div className="deck">
+        <section className="brief">
+          <h1 className="brief__title">{cat.name}</h1>
+          <p className="brief__sub">{cat.subtitle}</p>
+
+          <dl className="specs">
+            <div>
+              <dt>Otázek</dt>
+              <dd>{cat.questionCount}</dd>
             </div>
-            <ul className="resume__list">
-              {resumable.map((r) => (
+            <div>
+              <dt>Limit</dt>
+              <dd>
+                {settings.noTimeLimit ? <em>vypnut</em> : `${cat.timeLimitMin} min`}
+              </dd>
+            </div>
+            <div>
+              <dt>Banka</dt>
+              <dd>{totalQuestions(cat.id)}</dd>
+            </div>
+          </dl>
+
+          <PassScale total={cat.questionCount} passMark={cat.passMark} last={last} />
+
+          <button className="btn btn--go" onClick={() => onStart(cat.id, 'exam')}>
+            Spustit zkoušku
+            <Icon name="chevron" size={20} />
+          </button>
+
+          {tweaks.length > 0 && (
+            <button className="brief__tweaks" onClick={onSettings}>
+              <Icon name="gear" size={16} />
+              Zkouška upravena: {tweaks.join(' · ')}
+            </button>
+          )}
+        </section>
+
+        <div className="deck__side">
+        {mine.length > 0 && (
+          <section className="block">
+            <h2 className="block__head">
+              Rozdělaná práce
+              <span className="block__note">{mine.length}</span>
+            </h2>
+            <ul className="runs">
+              {mine.map((r) => (
                 <li key={r.key}>
-                  <button className="resume__go" onClick={() => onResume(r.key)}>
-                    <span className="resume__icon" aria-hidden="true">
-                      {r.icon}
-                    </span>
-                    <span className="resume__text">
-                      <span className="resume__name">{r.label}</span>
-                      <span className="resume__meta">
-                        {r.cat.name} · {r.answered}/{r.total}{' '}
+                  <button className="run" onClick={() => onResume(r.key)}>
+                    <Icon name={r.icon} className="run__icon" />
+                    <span className="run__text">
+                      <span className="run__name">{r.label}</span>
+                      <span className="run__meta">
+                        {r.answered}/{r.total}{' '}
                         {plural(r.total, 'otázka', 'otázky', 'otázek')} ·{' '}
                         {dateFmt.format(new Date(r.updatedAt))}
                       </span>
-                      <span className="resume__bar" aria-hidden="true">
+                      <span className="run__bar" aria-hidden="true">
                         <span style={{ width: `${Math.round((r.answered / r.total) * 100)}%` }} />
                       </span>
                     </span>
-                    <span className="resume__arrow" aria-hidden="true">
-                      ▸
-                    </span>
+                    <Icon name="play" size={16} className="run__go" />
                   </button>
                   <button
-                    className="resume__drop"
+                    className="iconbtn iconbtn--quiet"
                     onClick={() => setDropKey(r.key)}
                     aria-label={`Smazat postup – ${r.label}`}
                     title="Smazat postup"
                   >
-                    <span aria-hidden="true">✕</span>
+                    <Icon name="trash" size={18} />
                   </button>
                 </li>
               ))}
@@ -145,122 +202,102 @@ export default function Home({
           </section>
         )}
 
-        <section className="cards">
-          {CATEGORIES.map((c) => {
-            const missedCount = missed[c.id]?.length ?? 0
-            // S has no pictures at all – no point offering the explainer there
-            const pictures = imageCount(c.id)
-            return (
-            <article key={c.id} className={`card card--${c.accent}`}>
-              <div className="card__head">
-                <span className="card__badge">{c.id}</span>
-                <div>
-                  <h2 className="card__title">{c.name}</h2>
-                  <p className="card__subtitle">{c.subtitle}</p>
-                </div>
-              </div>
+        <section className="block">
+          <h2 className="block__head">Trénink</h2>
+          <div className="tiles">
+            <button className="tile" onClick={() => setSheet('topics')}>
+              <Icon name="rings" size={26} className="tile__icon" />
+              <span className="tile__name">Okruhy</span>
+              <span className="tile__meta">
+                {topics.length} {plural(topics.length, 'okruh', 'okruhy', 'okruhů')} ·{' '}
+                {totalQuestions(cat.id)} otázek
+              </span>
+            </button>
 
-              <dl className="stats">
-                <div>
-                  <dt>Otázek</dt>
-                  <dd>{c.questionCount}</dd>
-                </div>
-                <div>
-                  <dt>K úspěchu</dt>
-                  <dd>{c.passMark} b.</dd>
-                </div>
-                <div>
-                  <dt>Čas</dt>
-                  <dd>
-                    {settings.noTimeLimit ? (
-                      <span className="stat--off">bez limitu</span>
-                    ) : (
-                      `${c.timeLimitMin} min`
-                    )}
-                  </dd>
-                </div>
-              </dl>
-
-              <div className="card__actions">
-                <button className="btn btn--primary" onClick={() => onStart(c.id, 'exam')}>
-                  Spustit test
-                </button>
-                <button className="btn btn--topic" onClick={() => setPicker(c.id)}>
-                  <span aria-hidden="true">🎯</span> Procvičit
-                </button>
-                {pictures > 0 && (
-                  <button
-                    className="btn btn--explain btn--span"
-                    onClick={() => onExplain(c.id)}
-                  >
-                    <span aria-hidden="true">🖼</span> Obrázkový supervysvětlovač (
-                    {pictures})
-                  </button>
-                )}
-                {missedCount > 0 && (
-                  <button
-                    className="btn btn--mistakes btn--span"
-                    onClick={() => onStart(c.id, 'mistakes')}
-                  >
-                    <span aria-hidden="true">✕</span> Jen moje chyby ({missedCount})
-                  </button>
-                )}
-              </div>
-              <p className="card__hint">
+            <button
+              className="tile tile--bad"
+              onClick={() => onStart(cat.id, 'mistakes')}
+              disabled={missedCount === 0}
+            >
+              <Icon name="mistakes" size={26} className="tile__icon" />
+              <span className="tile__name">Moje chyby</span>
+              <span className="tile__meta">
                 {missedCount > 0
-                  ? 'Chybně zodpovězené otázky se ze seznamu ztratí, jakmile na ně odpovíte správně.'
-                  : 'Procvičovat lze jeden okruh nebo všechny otázky – bez bodování a bez času.'}
-              </p>
-            </article>
-            )
-          })}
+                  ? `${missedCount} ${plural(missedCount, 'otázka', 'otázky', 'otázek')} k opravě`
+                  : 'zatím čisto'}
+              </span>
+            </button>
+
+            <button
+              className="tile"
+              onClick={() => onExplain(cat.id)}
+              disabled={pictures === 0}
+            >
+              <Icon name="images" size={26} className="tile__icon" />
+              <span className="tile__name">Obrázky</span>
+              <span className="tile__meta">
+                {pictures > 0
+                  ? `${pictures} ${plural(pictures, 'obrázek', 'obrázky', 'obrázků')} s odpovědí`
+                  : 'v této kategorii nejsou'}
+              </span>
+            </button>
+
+            <button
+              className="tile"
+              onClick={() => (cribs.length === 1 ? onCrib(cribs[0].id) : setSheet('cribs'))}
+              disabled={cribs.length === 0}
+            >
+              <Icon name="scroll" size={26} className="tile__icon" />
+              <span className="tile__name">Taháky</span>
+              <span className="tile__meta">
+                {cribs.length > 0
+                  ? `${cribs.length} ${plural(cribs.length, 'vysvětlení', 'vysvětlení', 'vysvětlení')} místo biflování`
+                  : 'zatím jen pro M'}
+              </span>
+            </button>
+          </div>
+
+          {elsewhere > 0 && (
+            <p className="block__aside">
+              V ostatních kategoriích {plural(elsewhere, 'čeká', 'čekají', 'čeká')}{' '}
+              {elsewhere} {plural(elsewhere, 'rozdělaná', 'rozdělané', 'rozdělaných')}{' '}
+              {plural(elsewhere, 'práce', 'práce', 'prací')}.
+            </p>
+          )}
         </section>
 
-        <section className="cribs">
-          <div className="cribs__head">
-            <h2>Taháky</h2>
-            <p className="cribs__sub">
-              Vysvětlení místo biflování – proč signály vypadají tak, jak vypadají.
-            </p>
-          </div>
-          <ul className="cribs__list">
-            {CHEATSHEETS.map((s) => (
-              <li key={s.id}>
-                <button className="crib" onClick={() => onCrib(s.id)}>
-                  <span className="crib__badge" aria-hidden="true">
-                    {s.icon}
-                  </span>
-                  <span className="crib__text">
-                    <span className="crib__name">{s.title}</span>
-                    <span className="crib__meta">{s.subtitle}</span>
-                  </span>
-                  <span className="crib__go" aria-hidden="true">
-                    →
-                  </span>
-                </button>
-              </li>
-            ))}
-          </ul>
-        </section>
+        {canInstall && (
+          <button className="install" onClick={install}>
+            <Icon name="download" size={22} />
+            <span>
+              <strong>Nainstalovat do telefonu</strong>
+              <em>Funguje pak i bez signálu, na vodě i v podpalubí.</em>
+            </span>
+          </button>
+        )}
+
+        </div>
+        </div>
 
         {history.length > 0 && (
-          <section className="history">
-            <div className="history__head">
-              <h2>Poslední pokusy</h2>
-              <button className="btn btn--link" onClick={onClearHistory}>
+          <section className="block">
+            <h2 className="block__head">
+              Lodní deník
+              <button className="linkbtn" onClick={onClearHistory}>
                 Vymazat
               </button>
-            </div>
-            <ul className="history__list">
+            </h2>
+            <ul className="log">
               {history.map((h, i) => (
                 <li key={i} className={h.passed ? 'is-pass' : 'is-fail'}>
-                  <span className="history__pill">{h.passed ? 'Prospěl' : 'Neprospěl'}</span>
-                  <span className="history__cat">{h.categoryName}</span>
-                  <span className="history__score">
-                    {h.correct}/{h.total}
+                  <span className="log__verdict">{h.passed ? 'prospěl' : 'neprospěl'}</span>
+                  <span className="log__score">
+                    {h.correct}
+                    <em>/{h.total}</em>
                   </span>
-                  <span className="history__meta">
-                    {formatDuration(h.elapsedMs)} · {dateFmt.format(new Date(h.at))}
+                  <span className="log__meta">
+                    {h.categoryName} · {formatDuration(h.elapsedMs)} ·{' '}
+                    {dateFmt.format(new Date(h.at))}
                   </span>
                 </li>
               ))}
@@ -270,100 +307,97 @@ export default function Home({
 
         <footer className="footer">
           <p>
-            Zdroj otázek:{' '}
+            Otázky:{' '}
             <a href="http://www.spspraha.cz/zkousky/" target="_blank" rel="noreferrer">
               spspraha.cz
             </a>
-            . Neoficiální pomůcka pro přípravu – závazné je vždy zadání zkoušky.
+            . Neoficiální pomůcka – závazné je vždy zadání zkoušky.
           </p>
         </footer>
       </main>
 
-      {picker && (
-        <div className="sheet" onClick={() => setPicker(null)}>
-          <div
-            className="sheet__panel sheet__panel--full"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="sheet__head">
-              <div>
-                <h2>Procvičit</h2>
-                <p className="sheet__sub">{getCategory(picker).name}</p>
-              </div>
+      {sheet === 'topics' && (
+        <Sheet
+          title="Okruhy"
+          sub={`${cat.name} · bez bodů a bez času`}
+          onClose={() => setSheet(null)}
+          foot="Rozdělané procvičování se ukládá samo."
+        >
+          <li>
+            <button
+              className="row row--all"
+              onClick={() => {
+                setSheet(null)
+                onStart(cat.id, 'learn')
+              }}
+            >
+              <Icon name="folder" className="row__icon" />
+              <span className="row__label">
+                Všechny otázky
+                <ProgressNote run={runFor('learn')} />
+              </span>
+              <span className="row__count">{totalQuestions(cat.id)}</span>
+            </button>
+          </li>
+          {topics.map((t) => (
+            <li key={t.id}>
               <button
-                className="btn btn--ghost btn--icon"
-                onClick={() => setPicker(null)}
-                aria-label="Zavřít"
+                className="row"
+                onClick={() => {
+                  setSheet(null)
+                  onStart(cat.id, 'topic', t.id)
+                }}
               >
-                <span aria-hidden="true">✕</span>
+                <Icon name={topicIcon(t.id)} className="row__icon" />
+                <span className="row__label">
+                  {t.label}
+                  <ProgressNote run={runFor('topic', t.id)} />
+                </span>
+                <span className="row__count">{t.count}</span>
               </button>
-            </div>
+            </li>
+          ))}
+        </Sheet>
+      )}
 
-            <ul className="topics sheet__scroll">
-              {/* the whole bank, in the same list – the card no longer has a
-                  separate button for it */}
-              <li>
-                <button
-                  className="topic topic--all"
-                  onClick={() => {
-                    const cat = picker
-                    setPicker(null)
-                    onStart(cat, 'learn')
-                  }}
-                >
-                  <span className="topic__icon" aria-hidden="true">
-                    📚
-                  </span>
-                  <span className="topic__label">
-                    Všechny otázky
-                    <ProgressNote run={runFor('learn')} />
-                  </span>
-                  <span className="topic__count">{totalQuestions(picker)}</span>
-                </button>
-              </li>
-              {topicsOf(picker).map((t) => (
-                <li key={t.id}>
-                  <button
-                    className="topic"
-                    onClick={() => {
-                      const cat = picker
-                      setPicker(null)
-                      onStart(cat, 'topic', t.id)
-                    }}
-                  >
-                    <span className="topic__icon" aria-hidden="true">
-                      {topicIcon(t.id)}
-                    </span>
-                    <span className="topic__label">
-                      {t.label}
-                      <ProgressNote run={runFor('topic', t.id)} />
-                    </span>
-                    <span className="topic__count">{t.count}</span>
-                  </button>
-                </li>
-              ))}
-            </ul>
-
-            <div className="sheet__foot">
-              <p className="sheet__note">
-                Procvičování se neboduje a neběží v něm čas. Rozpracované se ukládá.
-              </p>
-            </div>
-          </div>
-        </div>
+      {sheet === 'cribs' && (
+        <Sheet
+          title="Taháky"
+          sub="Proč signály vypadají tak, jak vypadají"
+          onClose={() => setSheet(null)}
+        >
+          {cribs.map((s) => (
+            <li key={s.id}>
+              <button
+                className="row"
+                onClick={() => {
+                  setSheet(null)
+                  onCrib(s.id)
+                }}
+              >
+                <Icon name={s.icon} className="row__icon" />
+                <span className="row__label">
+                  {s.title}
+                  <span className="row__note">{s.subtitle}</span>
+                </span>
+                <Icon name="chevron" size={16} className="row__count" />
+              </button>
+            </li>
+          ))}
+        </Sheet>
       )}
 
       {dropping && (
-        <div className="sheet sheet--center" onClick={() => setDropKey(null)}>
+        <div className="scrim scrim--center" onClick={() => setDropKey(null)}>
           <div className="dialog" onClick={(e) => e.stopPropagation()}>
-            <h2>Smazat rozpracované procvičování?</h2>
+            <h2>Zahodit rozdělanou práci?</h2>
             <p>
               {dropping.label} ({dropping.cat.name}) – {dropping.answered} z{' '}
               {dropping.total} otázek. Příště se začne od začátku.
             </p>
             <div className="dialog__actions">
               <button className="btn btn--soft" onClick={() => setDropKey(null)}>
-                Zpět
+                Nechat
               </button>
               <button
                 className="btn btn--danger"
@@ -372,7 +406,7 @@ export default function Home({
                   setDropKey(null)
                 }}
               >
-                Smazat
+                Zahodit
               </button>
             </div>
           </div>
@@ -382,12 +416,69 @@ export default function Home({
   )
 }
 
-/** "rozpracováno 12/82" under a picker row that has saved progress. */
+/**
+ * The pass mark drawn as what it is: a line on a scale you have to get past.
+ * With a previous attempt in the log its score sits on the same scale, so
+ * "33/35" says something without doing arithmetic.
+ */
+function PassScale({ total, passMark, last }) {
+  const pct = (n) => `${(n / total) * 100}%`
+  const scored = last && last.total === total ? last.correct : null
+
+  return (
+    <div className="scale">
+      <div className="scale__rail" style={{ '--n': total }}>
+        {scored !== null && (
+          <div
+            className={`scale__fill ${last.passed ? 'is-pass' : 'is-fail'}`}
+            style={{ width: pct(scored) }}
+          />
+        )}
+        <div className="scale__mark" style={{ left: pct(passMark) }} />
+      </div>
+      <div className="scale__legend">
+        <span className="scale__pass">prospěl od {passMark}</span>
+        {scored !== null && (
+          <span className={`scale__last ${last.passed ? 'is-pass' : 'is-fail'}`}>
+            minule {scored}/{total}
+          </span>
+        )}
+      </div>
+    </div>
+  )
+}
+
+/** The bottom sheet used by both pickers – one scrolling list, pinned header. */
+function Sheet({ title, sub, foot, onClose, children }) {
+  return (
+    <div className="scrim" onClick={onClose}>
+      <div className="panel" onClick={(e) => e.stopPropagation()}>
+        <div className="panel__head">
+          <div>
+            <h2>{title}</h2>
+            {sub && <p className="panel__sub">{sub}</p>}
+          </div>
+          <button className="iconbtn" onClick={onClose} aria-label="Zavřít">
+            <Icon name="close" />
+          </button>
+        </div>
+        <ul className="panel__scroll rows">{children}</ul>
+        {foot && (
+          <div className="panel__foot">
+            <p className="panel__note">{foot}</p>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+/** "rozdělaných 12/82" under a picker row that has saved progress. */
 function ProgressNote({ run }) {
   if (!run) return null
   return (
-    <span className="topic__note">
-      rozpracováno {run.answered}/{run.total}
+    <span className="row__note row__note--on">
+      rozdělaných {run.answered}/{run.total}
     </span>
   )
 }

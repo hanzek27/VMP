@@ -3,6 +3,7 @@ import Lightbox, { ZoomImage } from './Lightbox'
 import { getCheatsheet } from '../data/cheatsheets'
 import { getCategory } from '../categories'
 import { useBackGuard } from '../lib/backGuard'
+import Icon from './Icon'
 
 /**
  * One tahák – a read-only explanation of a topic. No session, no answers, no
@@ -20,13 +21,11 @@ export default function Cheatsheet({ sheetId, onBack, onPractice }) {
   return (
     <div className="page">
       <header className="topbar">
-        <button className="btn btn--ghost" onClick={onBack}>
-          <span aria-hidden="true">←</span> Zpět
+        <button className="iconbtn iconbtn--onhead" onClick={onBack} aria-label="Zpět">
+          <Icon name="back" />
         </button>
         <h1 className="topbar__title">Tahák</h1>
-        <span className="topbar__count" aria-hidden="true">
-          {sheet.icon}
-        </span>
+        <Icon name={sheet.icon} className="topbar__mark" />
       </header>
 
       <main className="container container--narrow">
@@ -39,9 +38,7 @@ export default function Cheatsheet({ sheetId, onBack, onPractice }) {
         {sheet.sections.map((s, i) => (
           <section key={s.title} className="crib__section">
             <h3 className="crib__heading">
-              <span className="crib__icon" aria-hidden="true">
-                {s.icon}
-              </span>
+              <Icon name={s.icon} size={20} className="crib__icon" />
               <span className="crib__headtext">{s.title}</span>
               <span className="crib__num" aria-hidden="true">
                 {i + 1}
@@ -54,8 +51,8 @@ export default function Cheatsheet({ sheetId, onBack, onPractice }) {
         ))}
 
         <div className="crib__foot">
-          <button className="btn btn--primary btn--wide" onClick={onPractice}>
-            <span aria-hidden="true">🎯</span> Procvičit {sheet.title.toLowerCase()}
+          <button className="btn btn--go btn--wide" onClick={onPractice}>
+            <Icon name="rings" size={20} /> Procvičit {sheet.title.toLowerCase()}
           </button>
           <p className="crib__note">
             Otázky okruhu z kategorie {cat.name}, bez bodování a bez času.
@@ -78,7 +75,7 @@ function Block({ block, onZoom }) {
     case 'warn':
       return (
         <p className="crib__warn">
-          <span aria-hidden="true">⚠️</span> {block.text}
+          <Icon name="sos" size={20} /> <span>{block.text}</span>
         </p>
       )
 
@@ -170,7 +167,7 @@ function Rhythm({ code }) {
           </span>
         ) : (
           <span key={i} className={`crib__blip crib__blip--${ch}`}>
-            {ch === 'B' ? '🔔' : null}
+            {ch === 'B' ? 'B' : null}
           </span>
         )
       )}

@@ -13,6 +13,7 @@ export const DEFAULT_SETTINGS = {
   shuffleAnswers: true,
 }
 
+const CATEGORY_KEY = 'vmp.category.v1'
 const SETTINGS_KEY = 'vmp.settings.v1'
 const HISTORY_KEY = 'vmp.history.v1'
 const MISSED_KEY = 'vmp.missed.v1'
@@ -33,6 +34,28 @@ function write(key, value) {
   } catch {
     /* storage unavailable (private mode) – settings just won't persist */
   }
+}
+
+/**
+ * The category the home screen is showing. The whole screen is one category at
+ * a time, so the app has to remember which one — otherwise every visit starts
+ * on M and an S candidate re-picks their category forever.
+ *
+ * Home unmounts while an exam runs, so a plain read on mount is enough to keep
+ * this in sync; there is no second copy of the state to reconcile.
+ */
+export function useCategory(fallback) {
+  const [categoryId, setCategoryId] = useState(() => {
+    const saved = read(CATEGORY_KEY, null)
+    return typeof saved === 'string' ? saved : fallback
+  })
+
+  const select = useCallback((id) => {
+    setCategoryId(id)
+    write(CATEGORY_KEY, id)
+  }, [])
+
+  return [categoryId, select]
 }
 
 export function useSettings() {

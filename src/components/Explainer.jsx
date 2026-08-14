@@ -4,6 +4,7 @@ import { getCategory, imageCards, topicsOf } from '../categories'
 import { plural } from '../lib/exam'
 import { useBackGuard } from '../lib/backGuard'
 import { topicIcon } from '../topics'
+import Icon from './Icon'
 
 /**
  * Every picture in a category with its correct answer right next to it – no
@@ -33,14 +34,14 @@ export default function Explainer({ categoryId, onBack }) {
   return (
     <div className="page">
       <header className="topbar">
-        <button className="btn btn--ghost" onClick={onBack}>
-          <span aria-hidden="true">←</span> Zpět
+        <button className="iconbtn iconbtn--onhead" onClick={onBack} aria-label="Zpět">
+          <Icon name="back" />
         </button>
-        <h1 className="topbar__title">Supervysvětlovač</h1>
+        <h1 className="topbar__title">Obrázky</h1>
         <span className="topbar__count">{total}</span>
       </header>
 
-      <main className="container container--narrow">
+      <main className="container container--gallery">
         <p className="explain__intro">
           {cat.name} – {total} {plural(total, 'obrázek', 'obrázky', 'obrázků')} z otázek,
           u každého rovnou správná odpověď. Nic se tu neboduje, jen se to prohlíží.
@@ -49,9 +50,7 @@ export default function Explainer({ categoryId, onBack }) {
         {groups.map((g) => (
           <section key={g.id} className="explain__group">
             <h2 className="explain__heading">
-              <span className="explain__icon" aria-hidden="true">
-                {topicIcon(g.id)}
-              </span>
+              <Icon name={topicIcon(g.id)} size={20} className="explain__icon" />
               <span className="explain__title">{g.label}</span>
               <span className="explain__count">{g.count}</span>
             </h2>

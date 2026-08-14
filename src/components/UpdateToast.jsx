@@ -13,10 +13,10 @@ export default function UpdateToast() {
         <strong>Je k dispozici nová verze.</strong> Aktualizace stránku znovu načte.
       </span>
       <span className="toast__actions">
-        <button className="btn btn--ghost" onClick={dismissUpdate}>
+        <button className="btn btn--soft" onClick={dismissUpdate}>
           Později
         </button>
-        <button className="btn btn--primary" onClick={applyUpdate}>
+        <button className="btn btn--go" onClick={applyUpdate}>
           Aktualizovat
         </button>
       </span>

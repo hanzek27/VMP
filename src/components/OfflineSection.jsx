@@ -1,5 +1,6 @@
 import { plural } from '../lib/exam'
 import { isStandalone, useInstall, useOfflineMedia } from '../lib/pwa'
+import Icon from './Icon'
 
 /* Questions and the app shell are cached automatically – the 5 MB of images
  * are not, so downloading them is a deliberate choice made here. */
@@ -16,7 +17,7 @@ export default function OfflineSection() {
       <div className="mistakes__head">
         <h2>Offline a instalace</h2>
         {complete && !busy && (
-          <button className="btn btn--link" onClick={clear}>
+          <button className="linkbtn" onClick={clear}>
             Uvolnit místo
           </button>
         )}
@@ -57,8 +58,8 @@ export default function OfflineSection() {
       )}
 
       {canInstall && (
-        <button className="btn btn--primary btn--wide" onClick={install}>
-          <span aria-hidden="true">⤓</span> Instalovat jako aplikaci
+        <button className="btn btn--go btn--wide" onClick={install}>
+          <Icon name="download" size={20} /> Instalovat jako aplikaci
         </button>
       )}
 
@@ -70,7 +71,7 @@ export default function OfflineSection() {
       )}
 
       {(installed || isStandalone()) && (
-        <p className="offline__hint">Aplikace běží v samostatném okně. 🎉</p>
+        <p className="offline__hint">Aplikace běží v samostatném okně.</p>
       )}
     </section>
   )
